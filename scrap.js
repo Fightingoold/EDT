@@ -5,14 +5,10 @@ const ftp = require("basic-ftp");
 (async () => {
     // Configuration pour GitHub Actions : on utilise le chemin de Chrome défini dans le .yml
     const browser = await puppeteer.launch({ 
-        headless: "new", 
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
-        args: [
-            '--no-sandbox', 
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage'
-        ] 
-    });
+    headless: "new", 
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
+    args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+});
     
     const page = await browser.newPage();
 

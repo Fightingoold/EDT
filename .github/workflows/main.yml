@@ -16,13 +16,13 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install Google Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
       - name: Install Dependencies
         run: npm install
-
-      - name: Install Chrome
-        run: |
-          # On utilise sudo pour éviter le "Permission denied"
-          sudo npx @puppeteer/browsers install chrome --path /home/runner/work/EDT/EDT/chrome
 
       - name: Run Scraper
         run: node scrap.js
@@ -32,5 +32,5 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
-          # On indique à Puppeteer où on a installé Chrome
-          PUPPETEER_EXECUTABLE_PATH: /home/runner/work/EDT/EDT/chrome/chrome/linux-147.0.7727.57/chrome-linux64/chrome
+          # On récupère le chemin de Chrome installé par l'Action
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
