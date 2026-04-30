@@ -2,17 +2,12 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-    console.log("🎬 Démarrage du script (Extraction enrichie pour MMIDASH)...");
+    console.log("🎬 Démarrage du script MMIDASH...");
     
     const browser = await puppeteer.launch({ 
         headless: "new", 
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
-        args: [
-            '--no-sandbox', 
-            '--disable-setuid-sandbox', 
-            '--disable-dev-shm-usage',
-            '--lang=fr-FR,fr'
-        ] 
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--lang=fr-FR'] 
     });
 
     const page = await browser.newPage();
@@ -22,8 +17,8 @@ const fs = require('fs');
         console.log("🚀 Connexion à l'ENT...");
         await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp', { waitUntil: 'networkidle2' });
 
-        // --- AUTHENTIFICATION ---
-        await page.waitForSelector('#username');
+        // Authentification
+        await page.waitForSelector('#username', { timeout: 10000 });
         await page.type('#username', process.env.ADE_USER); 
         await page.type('#password', process.env.ADE_PASS);
         await Promise.all([
@@ -31,92 +26,78 @@ const fs = require('fs');
             page.waitForNavigation({ waitUntil: 'networkidle0' })
         ]);
 
-        // --- PASSAGE DES ÉCRANS INTERMÉDIAIRES (MFA/PROCEED) ---
-        await new Promise(r => setTimeout(r, 5000)); 
-        await page.evaluate(() => {
-            const buttons = Array.from(document.querySelectorAll('span, button, a'));
-            const target = buttons.find(el => {
-                const txt = el.innerText.toUpperCase();
-                return txt.includes('PROCEED') || txt.includes('CONTINUE') || txt.includes('CONTINUER');
-            });
-            if (target) target.click();
-        });
-
-        console.log("⏳ Attente du chargement de l'interface ADE...");
+        // Attente forcée pour passer les éventuels écrans de redirection
         await new Promise(r => setTimeout(r, 8000)); 
 
-        // --- NAVIGATION DANS L'ARBORESCENCE ---
-        // Basé sur ton profil : BUT MMI1 TD11 11B à Laval
+        // --- NAVIGATION ROBUSTE ---
         const chemin = ["Etudiants", "IUT LAVAL", "Dpt MMI", "BUT MMI1", "TD11", "11B"];
         
         for (const texte of chemin) {
-            console.log(`📍 Navigation : ${texte}`);
-            const element = await page.waitForSelector(`xpath///span[text()="${texte}"]`, { visible: true, timeout: 20000 });
+            console.log(`📍 Recherche de : ${texte}`);
             
-            // On cherche l'icône "+" pour déplier, sauf pour le dernier élément (le groupe)
-            const icone = await page.$(`xpath///span[text()="${texte}"]/preceding-sibling::img[contains(@class, "x-tree3-node-joint")]`);
+            // On attend que l'élément soit présent dans le DOM et visible
+            const elementSelector = `xpath///span[normalize-space(text())="${texte}"]`;
+            await page.waitForSelector(elementSelector, { visible: true, timeout: 30000 });
             
-            if (icone && texte !== "11B") {
-                await icone.click();
+            if (texte !== "11B") {
+                // Cliquer sur l'icône de déploiement (+) juste avant le span
+                const iconClicked = await page.evaluate((txt) => {
+                    const span = Array.from(document.querySelectorAll('span')).find(s => s.innerText.trim() === txt);
+                    const icon = span?.parentElement?.querySelector('.x-tree3-node-joint');
+                    if (icon) { icon.click(); return true; }
+                    return false;
+                }, texte);
+                
+                if (!iconClicked) {
+                    const el = await page.$(`xpath///span[normalize-space(text())="${texte}"]`);
+                    await el.click();
+                }
             } else {
-                // Double clic sur le groupe final pour afficher le planning
-                await element.click({ clickCount: 2 });
+                // Double-clic sur le groupe final
+                const finalEl = await page.$(`xpath///span[normalize-space(text())="${texte}"]`);
+                await finalEl.click({ clickCount: 2 });
             }
-            await new Promise(r => setTimeout(r, 3000)); 
+            await new Promise(r => setTimeout(r, 2000)); 
         }
 
-        console.log("📊 Extraction des données...");
+        console.log("📊 Extraction des cours...");
+        await new Promise(r => setTimeout(r, 5000)); // Attente chargement planning
+
         const planningData = await page.evaluate(() => {
             const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-            
             return Array.from(document.querySelectorAll('.eventText'))
-                .filter(b => b.innerText.trim().length > 1)
+                .filter(b => b.innerText.trim().length > 5)
                 .map(bloc => {
                     const container = bloc.parentElement.parentElement;
                     const left = parseInt(container.style.left) || 0;
                     const lignes = bloc.innerText.split('\n').map(s => s.trim()).filter(s => s !== "");
                     
-                    // 1. Matière (souvent la 1ère ligne)
-                    const matiere = lignes[0] || "Matière inconnue";
-                    
-                    // 2. Horaire via Regex
+                    const matiere = lignes[0] || "Inconnue";
                     const horaireMatch = bloc.innerText.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
-                    const horaire = horaireMatch ? horaireMatch[0].replace(/\s/g, '') : "00h00-00h00";
-
-                    // 3. Type de cours (TP / TD / Promo)
-                    const fullText = lignes.join(' ').toUpperCase();
+                    const horaire = horaireMatch ? horaireMatch[0].replace(/\s/g, '').replace('-', ' - ') : "N/C";
+                    
+                    const textTotal = lignes.join(' ').toUpperCase();
                     let type = "PROMO";
-                    if (fullText.includes(' TP')) type = "TP";
-                    else if (fullText.includes(' TD')) type = "TD";
+                    if (textTotal.includes('TP')) type = "TP";
+                    else if (textTotal.includes('TD')) type = "TD";
 
-                    // 4. Salle (Cherche les patterns classiques MMI ou Amphi)
                     const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C";
-
-                    // 5. Prof (souvent la dernière ligne qui n'est pas la salle)
-                    let prof = "Non spécifié";
-                    if (lignes.length > 2) {
-                        const derniereLigne = lignes[lignes.length - 1];
-                        prof = derniereLigne === salle ? (lignes[lignes.length - 2] || "Non spécifié") : derniereLigne;
-                    }
+                    const prof = lignes.length > 2 ? lignes[lignes.length - 1] : "N/C";
 
                     return {
                         jour: jours[Math.round(left / 245)] || "Inconnu",
-                        matiere: matiere,
-                        horaire: horaire.replace('-', ' - '),
-                        type: type,
-                        salle: salle,
-                        prof: prof
+                        matiere, horaire, type, salle, prof
                     };
                 });
         });
 
-        // --- SAUVEGARDE ---
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log(`✅ Extraction réussie : ${planningData.length} cours enregistrés.`);
+        console.log(`✅ ${planningData.length} cours extraits !`);
 
     } catch (error) {
-        console.error("❌ ERREUR DURANT LE SCRAPING :", error.message);
+        console.error("❌ ERREUR :", error.message);
         await page.screenshot({ path: 'error.png' });
+        process.exit(1);
     } finally {
         await browser.close();
     }

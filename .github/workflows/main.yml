@@ -1,53 +1,49 @@
 name: Auto-Update Planning
 on:
   schedule:
-    - cron: '0 5 * * *' # S'exécute chaque jour à 5h du mat'
-  workflow_dispatch: # Bouton pour lancer manuellement
+    - cron: '0 5 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # On force les permissions ici aussi pour être sûr
     permissions:
       contents: write
-      
     steps:
-      - name: 📂 Récupération du code
+      - name: 📂 Checkout
         uses: actions/checkout@v3
 
-      - name: 🟢 Installation de Node.js
+      - name: 🟢 Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: 🌐 Installation de Chrome
+      - name: 🌐 Chrome
         uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
 
-      - name: 📦 Installation des dépendances
-        run: npm install
+      - name: 📦 Install
+        run: npm install puppeteer
 
-      - name: 🤖 Exécution du Scraping
+      - name: 🤖 Scraping
         run: node scrap.js
         env:
           ADE_USER: ${{ secrets.ADE_USER }}
           ADE_PASS: ${{ secrets.ADE_PASS }}
           PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
 
-      - name: 💾 Sauvegarde du planning sur GitHub
+      - name: 💾 Git Push
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
           git add planning.json
-          git commit -m "Mise à jour automatique du planning" || echo "Aucune modification"
-          git push
+          git commit -m "Update planning" || echo "No changes"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 📸 Backup des screenshots si ça plante
-        if: always()
+      - name: 📸 Upload Error Screenshot
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-files
-          path: |
-            error.png
-            planning.json
+          name: error-screenshot
+          path: error.png
