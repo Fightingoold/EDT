@@ -43,7 +43,7 @@ const fs = require('fs');
         await new Promise(r => setTimeout(r, 8000)); 
 
         const etapes = [
-            ["Etudiants", "Students"],
+            ["Etudiants", "Trainees"],
             ["IUT LAVAL", "IUT LAVAL"],
             ["Dpt MMI", "Dpt MMI"],
             ["BUT MMI1", "BUT MMI1"],
