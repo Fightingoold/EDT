@@ -113,7 +113,7 @@
 
         async function init() {
             try {
-                const res = await fetch('planning.json');
+                const res = await fetch('https://raw.githubusercontent.com/Fightingoold/EDT/main/planning.json');
                 planningData = await res.json();
                 render();
             } catch (e) { console.error("Erreur JSON"); }
