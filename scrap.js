@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-    console.log("🎬 Diagnostic MMIDASH-BOT...");
+    console.log("🎬 Diagnostic MMIDASH-BOT (Mode Bypass Proceed)...");
     
     const browser = await puppeteer.launch({ 
         headless: "new", 
@@ -25,9 +25,22 @@ const fs = require('fs');
             page.waitForNavigation({ waitUntil: 'networkidle0' })
         ]);
 
-        // Attente du chargement initial
-        console.log("⏳ Attente du tableau de bord...");
-        await new Promise(r => setTimeout(r, 10000)); 
+        // --- NOUVEAU : BYPASS DES BOUTONS INTERMÉDIAIRES ---
+        console.log("⏳ Vérification des boutons Proceed/Continuer...");
+        await new Promise(r => setTimeout(r, 5000)); // On laisse la page se poser
+
+        await page.evaluate(() => {
+            const labels = ["PROCEED", "CONTINUER", "CONTINUE", "ACCÉDER", "ACCEDER"];
+            const elements = Array.from(document.querySelectorAll('button, span, a, input[type="button"]'));
+            const target = elements.find(el => labels.some(l => el.innerText.toUpperCase().includes(l)));
+            if (target) {
+                console.log("Bouton trouvé, clic en cours...");
+                target.click();
+            }
+        });
+
+        // Attente après le clic sur Proceed
+        await new Promise(r => setTimeout(r, 8000)); 
 
         const etapes = [
             ["Etudiants", "Students"],
@@ -47,14 +60,13 @@ const fs = require('fs');
                         const spans = Array.from(document.querySelectorAll('span'));
                         return spans.some(s => (s.innerText.trim() === f || s.innerText.trim() === e) && s.offsetHeight > 0);
                     },
-                    { timeout: 15000 }, // 15s par étape pour aller plus vite
+                    { timeout: 20000 }, 
                     fr, en
                 );
             } catch (e) {
-                // SCREENSHOT DE MORT : On prend la photo pile quand ça bloque
-                console.log(`📸 Screenshot de l'erreur pris pour l'étape : ${fr}`);
+                console.log(`📸 Blocage sur ${fr}, capture d'écran...`);
                 await page.screenshot({ path: 'error.png', fullPage: true });
-                throw new Error(`Bloqué sur l'étape ${fr}. Regarde l'artifact error.png`);
+                throw new Error(`Échec à l'étape ${fr}. Vérifie error.png`);
             }
 
             const handle = await page.evaluateHandle((f, e) => {
@@ -69,10 +81,10 @@ const fs = require('fs');
                     const icon = span?.parentElement?.querySelector('.x-tree3-node-joint');
                     if (icon) icon.click();
                 }, fr, en);
-                await new Promise(r => setTimeout(r, 2000));
+                await new Promise(r => setTimeout(r, 2500));
             } else {
                 await handle.click({ clickCount: 2 });
-                await new Promise(r => setTimeout(r, 8000));
+                await new Promise(r => setTimeout(r, 10000));
             }
         }
 
@@ -83,20 +95,19 @@ const fs = require('fs');
                 const left = parseInt(container.style.left) || 0;
                 const lignes = bloc.innerText.split('\n').map(s => s.trim()).filter(s => s !== "");
                 const horaireRaw = (bloc.innerText.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/) || [""])[0];
-                const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C";
                 return {
                     jour: joursSemaine[Math.round(left / 245)] || "Inconnu",
                     matiere: lignes[0] || "Cours",
                     horaire: horaireRaw.replace(/\s/g, '').replace('-', ' - '),
                     type: lignes.join(' ').toUpperCase().includes('TP') ? 'TP' : (lignes.join(' ').toUpperCase().includes('TD') ? 'TD' : 'PROMO'),
-                    salle: salle,
+                    salle: lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C",
                     prof: lignes.length > 2 ? lignes[lignes.length - 1] : "N/C"
                 };
             });
         });
 
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log(`✅ Terminé ! ${planningData.length} cours trouvés.`);
+        console.log(`✅ Extraction réussie !`);
 
     } catch (error) {
         console.error("❌ ERREUR :", error.message);
