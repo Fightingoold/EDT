@@ -1,0 +1,28 @@
+name: Auto-Update Planning
+on:
+  schedule:
+    - cron: '0 5 * * *' # Tous les jours à 5h du matin
+  workflow_dispatch: # Permet de cliquer sur un bouton pour tester
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install Dependencies
+        run: npm install
+        
+      - name: Run Scraper
+        run: node scrap.js
+        env:
+          ADE_USER: ${{ secrets.ADE_USER }}
+          ADE_PASS: ${{ secrets.ADE_PASS }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMI Dashboard | Planning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; }
+        .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        .calendar-wrapper {
+            position: relative;
+            display: flex;
+            height: 850px; /* Taille ajustée pour s'arrêter à 18h */
+            min-width: 100%;
+        }
+
+        .time-gutter {
+            width: 50px;
+            flex-shrink: 0;
+            position: relative;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .hour-mark {
+            position: absolute;
+            right: 10px;
+            transform: translateY(-50%);
+            font-size: 0.65rem;
+            color: #475569;
+            font-weight: bold;
+        }
+
+        .days-container {
+            display: flex;
+            flex-grow: 1;
+            position: relative;
+            gap: 4px;
+        }
+
+        .day-column {
+            flex: 1;
+            position: relative;
+            height: 100%;
+            background: rgba(255,255,255,0.01);
+            border-radius: 8px;
+        }
+
+        .grid-line {
+            position: absolute;
+            left: 0; right: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            pointer-events: none;
+        }
+
+        .course-card {
+            position: absolute;
+            left: 4px; right: 4px;
+            border-radius: 10px;
+            padding: 8px;
+            font-size: 0.72rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .type-tp { background: linear-gradient(135deg, #065f46 0%, #059669 100%); border-left: 4px solid #34d399; }
+        .type-td { background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); border-left: 4px solid #60a5fa; }
+        .type-promo { background: linear-gradient(135deg, #9f1239 0%, #e11d48 100%); border-left: 4px solid #fb7185; }
+
+        .active-btn { background: #3b82f6 !important; color: white !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+
+    <div class="max-w-[1400px] mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-2xl font-black italic tracking-tighter">MMI<span class="text-blue-500">DASH</span></h1>
+            
+            <div class="flex gap-2 glass p-1 rounded-xl">
+                <button onclick="setView('day')" id="btn-day" class="px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all">Jour</button>
+                <button onclick="setView('week')" id="btn-week" class="px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all active-btn">Semaine</button>
+            </div>
+
+            <div id="day-nav" class="hidden flex gap-2 overflow-x-auto no-scrollbar py-2">
+                <!-- Injecté par JS -->
+            </div>
+        </header>
+
+        <div class="glass rounded-[2rem] p-4 overflow-x-auto no-scrollbar shadow-2xl">
+            <div class="calendar-wrapper">
+                <div class="time-gutter" id="time-gutter"></div>
+                <div class="days-container" id="days-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+        const START_H = 8;
+        const END_H = 18; // Arrêt à 18h
+        const PIXELS_PER_HOUR = 80;
+        
+        let currentView = 'week';
+        let currentDay = jours[new Date().getDay() - 1] || "Lundi";
+        let planningData = [];
+
+        async function init() {
+            try {
+                const res = await fetch('planning.json');
+                planningData = await res.json();
+                render();
+            } catch (e) { console.error("Erreur JSON"); }
+        }
+
+        function setView(v) {
+            currentView = v;
+            document.getElementById('btn-day').classList.toggle('active-btn', v === 'day');
+            document.getElementById('btn-week').classList.toggle('active-btn', v === 'week');
+            document.getElementById('day-nav').style.display = v === 'day' ? 'flex' : 'none';
+            render();
+        }
+
+        function timeToPx(timeStr) {
+            const [h, m] = timeStr.split('h').map(Number);
+            const totalMinutes = (h - START_H) * 60 + m;
+            return (totalMinutes / 60) * PIXELS_PER_HOUR;
+        }
+
+        function render() {
+            const gutter = document.getElementById('time-gutter');
+            const container = document.getElementById('days-container');
+            const dayNav = document.getElementById('day-nav');
+
+            // 1. Gutter des heures (8h -> 18h)
+            let gutterHtml = '';
+            for (let h = START_H; h <= END_H; h++) {
+                gutterHtml += `<div class="hour-mark" style="top: ${(h - START_H) * PIXELS_PER_HOUR}px">${h}h00</div>`;
+            }
+            gutter.innerHTML = gutterHtml;
+
+            // 2. Nav Jour
+            dayNav.innerHTML = jours.map(j => `
+                <button onclick="currentDay='${j}'; render();" class="px-4 py-1 rounded-full border border-white/10 text-[10px] font-bold ${currentDay === j ? 'bg-white text-black' : 'text-white/40'}">${j}</button>
+            `).join('');
+
+            // 3. Colonnes
+            const displayJours = currentView === 'week' ? jours : [currentDay];
+            container.innerHTML = displayJours.map(j => `
+                <div class="day-column">
+                    <div class="text-center text-[10px] font-black text-slate-500 uppercase mb-2 sticky top-0">${j}</div>
+                    ${Array.from({length: END_H - START_H + 1}).map((_, i) => `<div class="grid-line" style="top: ${i * PIXELS_PER_HOUR}px"></div>`).join('')}
+                    ${renderCoursesForDay(j)}
+                </div>
+            `).join('');
+        }
+
+        function renderCoursesForDay(day) {
+            return planningData.filter(c => c.jour === day).map(c => {
+                try {
+                    const [start, end] = c.horaire.split(' - ');
+                    const top = timeToPx(start);
+                    const height = timeToPx(end) - top;
+
+                    const type = c.type.toUpperCase();
+                    const typeClass = type.includes('TP') ? 'type-tp' : type.includes('TD') ? 'type-td' : 'type-promo';
+
+                    return `
+                        <div class="course-card ${typeClass}" style="top: ${top}px; height: ${height}px;">
+                            <div class="flex justify-between font-black text-[0.65rem] leading-none mb-1">
+                                <span>${c.matiere}</span>
+                                <span class="opacity-70">${c.horaire}</span>
+                            </div>
+                            <div class="text-[0.6rem] font-medium truncate">${c.prof}</div>
+                            <div class="mt-auto text-[0.6rem] font-bold opacity-60 uppercase">${c.salle}</div>
+                        </div>
+                    `;
+                } catch(e) { return ''; }
+            }).join('');
+        }
+
+        init();
+    </script>
+</body>
+</html>
