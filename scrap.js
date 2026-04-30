@@ -2,12 +2,12 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-    console.log("🎬 Démarrage du script MMIDASH...");
+    console.log("🎬 Lancement du MMIDASH-BOT (Mode Ultra-Robuste)...");
     
     const browser = await puppeteer.launch({ 
         headless: "new", 
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--lang=fr-FR'] 
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--lang=fr-FR,fr'] 
     });
 
     const page = await browser.newPage();
@@ -17,8 +17,8 @@ const fs = require('fs');
         console.log("🚀 Connexion à l'ENT...");
         await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp', { waitUntil: 'networkidle2' });
 
-        // Authentification
-        await page.waitForSelector('#username', { timeout: 10000 });
+        // --- AUTHENTIFICATION ---
+        await page.waitForSelector('#username', { timeout: 15000 });
         await page.type('#username', process.env.ADE_USER); 
         await page.type('#password', process.env.ADE_PASS);
         await Promise.all([
@@ -26,76 +26,91 @@ const fs = require('fs');
             page.waitForNavigation({ waitUntil: 'networkidle0' })
         ]);
 
-        // Attente forcée pour passer les éventuels écrans de redirection
-        await new Promise(r => setTimeout(r, 8000)); 
+        // Attente anti-bug (redirections ADE)
+        await new Promise(r => setTimeout(r, 10000)); 
 
-        // --- NAVIGATION ROBUSTE ---
-        const chemin = ["Etudiants", "IUT LAVAL", "Dpt MMI", "BUT MMI1", "TD11", "11B"];
+        // --- NAVIGATION BILINGUE (FR/EN) ---
+        const etapes = [
+            ["Etudiants", "Students"],
+            ["IUT LAVAL", "IUT LAVAL"],
+            ["Dpt MMI", "Dpt MMI"],
+            ["BUT MMI1", "BUT MMI1"],
+            ["TD11", "TD11"],
+            ["11B", "11B"]
+        ];
         
-        for (const texte of chemin) {
-            console.log(`📍 Recherche de : ${texte}`);
+        for (const [fr, en] of etapes) {
+            console.log(`📍 Étape : ${fr} / ${en}`);
             
-            // On attend que l'élément soit présent dans le DOM et visible
-            const elementSelector = `xpath///span[normalize-space(text())="${texte}"]`;
-            await page.waitForSelector(elementSelector, { visible: true, timeout: 30000 });
-            
-            if (texte !== "11B") {
-                // Cliquer sur l'icône de déploiement (+) juste avant le span
-                const iconClicked = await page.evaluate((txt) => {
-                    const span = Array.from(document.querySelectorAll('span')).find(s => s.innerText.trim() === txt);
+            // Attente que le texte FR ou EN apparaisse
+            await page.waitForFunction(
+                (f, e) => {
+                    const spans = Array.from(document.querySelectorAll('span'));
+                    return spans.some(s => (s.innerText.trim() === f || s.innerText.trim() === e) && s.offsetHeight > 0);
+                },
+                { timeout: 30000 },
+                fr, en
+            );
+
+            // On récupère l'élément
+            const handle = await page.evaluateHandle((f, e) => {
+                return Array.from(document.querySelectorAll('span'))
+                            .find(s => s.innerText.trim() === f || s.innerText.trim() === e);
+            }, fr, en);
+
+            if (fr !== "11B") {
+                // On clique sur l'icône "+" pour déplier
+                await page.evaluate((f, e) => {
+                    const span = Array.from(document.querySelectorAll('span'))
+                                      .find(s => s.innerText.trim() === f || s.innerText.trim() === e);
                     const icon = span?.parentElement?.querySelector('.x-tree3-node-joint');
-                    if (icon) { icon.click(); return true; }
-                    return false;
-                }, texte);
-                
-                if (!iconClicked) {
-                    const el = await page.$(`xpath///span[normalize-space(text())="${texte}"]`);
-                    await el.click();
-                }
+                    if (icon) icon.click();
+                }, fr, en);
+                await new Promise(r => setTimeout(r, 2500));
             } else {
-                // Double-clic sur le groupe final
-                const finalEl = await page.$(`xpath///span[normalize-space(text())="${texte}"]`);
-                await finalEl.click({ clickCount: 2 });
+                // Double-clic final pour charger le planning
+                await handle.click({ clickCount: 2 });
+                console.log("⌛ Chargement final du planning...");
+                await new Promise(r => setTimeout(r, 8000));
             }
-            await new Promise(r => setTimeout(r, 2000)); 
         }
 
-        console.log("📊 Extraction des cours...");
-        await new Promise(r => setTimeout(r, 5000)); // Attente chargement planning
-
+        // --- EXTRACTION ---
+        console.log("📊 Extraction des cours en cours...");
         const planningData = await page.evaluate(() => {
-            const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-            return Array.from(document.querySelectorAll('.eventText'))
-                .filter(b => b.innerText.trim().length > 5)
-                .map(bloc => {
-                    const container = bloc.parentElement.parentElement;
-                    const left = parseInt(container.style.left) || 0;
-                    const lignes = bloc.innerText.split('\n').map(s => s.trim()).filter(s => s !== "");
-                    
-                    const matiere = lignes[0] || "Inconnue";
-                    const horaireMatch = bloc.innerText.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
-                    const horaire = horaireMatch ? horaireMatch[0].replace(/\s/g, '').replace('-', ' - ') : "N/C";
-                    
-                    const textTotal = lignes.join(' ').toUpperCase();
-                    let type = "PROMO";
-                    if (textTotal.includes('TP')) type = "TP";
-                    else if (textTotal.includes('TD')) type = "TD";
+            const joursSemaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+            const elements = Array.from(document.querySelectorAll('.eventText'));
+            
+            return elements.filter(b => b.innerText.trim().length > 5).map(bloc => {
+                const container = bloc.parentElement.parentElement;
+                const left = parseInt(container.style.left) || 0;
+                const lignes = bloc.innerText.split('\n').map(s => s.trim()).filter(s => s !== "");
+                
+                const matiere = lignes[0] || "Cours";
+                const horaireRaw = (bloc.innerText.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/) || [""])[0];
+                const horaire = horaireRaw.replace(/\s/g, '').replace('-', ' - ');
+                
+                const fullText = lignes.join(' ').toUpperCase();
+                let type = "PROMO";
+                if (fullText.includes('TP')) type = "TP";
+                else if (fullText.includes('TD')) type = "TD";
 
-                    const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C";
-                    const prof = lignes.length > 2 ? lignes[lignes.length - 1] : "N/C";
+                const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C";
+                const prof = lignes.length > 2 ? lignes[lignes.length - 1] : "N/C";
 
-                    return {
-                        jour: jours[Math.round(left / 245)] || "Inconnu",
-                        matiere, horaire, type, salle, prof
-                    };
-                });
+                return {
+                    jour: joursSemaine[Math.round(left / 245)] || "Inconnu",
+                    matiere, horaire, type, salle, prof
+                };
+            });
         });
 
+        // --- SAUVEGARDE ---
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log(`✅ ${planningData.length} cours extraits !`);
+        console.log(`✅ Terminé ! ${planningData.length} cours trouvés.`);
 
     } catch (error) {
-        console.error("❌ ERREUR :", error.message);
+        console.error("❌ ERREUR FATALE :", error.message);
         await page.screenshot({ path: 'error.png' });
         process.exit(1);
     } finally {
