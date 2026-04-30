@@ -3,16 +3,17 @@ const fs = require('fs');
 const ftp = require("basic-ftp");
 
 (async () => {
-    console.log("🎬 Tentative de contournement du MFA...");
+    console.log("🎬 Tentative ultime...");
     const browser = await puppeteer.launch({ 
         headless: "new", 
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] 
     });
     const page = await browser.newPage();
+    await page.setViewport({ width: 1920, height: 1080 });
 
     try {
-        console.log("🔗 Connexion à ADE...");
+        console.log("🚀 Connexion à ADE...");
         await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp', { waitUntil: 'networkidle2' });
 
         // --- LOGIN ---
@@ -24,61 +25,70 @@ const ftp = require("basic-ftp");
             page.waitForNavigation({ waitUntil: 'networkidle0' })
         ]);
 
-        // --- GESTION DU MFA / PROCEED ---
-        console.log("🛡️ Vérification des blocages de sécurité...");
-        try {
-            // On cherche le bouton "PROCEED" que tu as vu dans les logs
-            const proceedBtn = await page.waitForSelector('xpath///span[contains(text(), "PROCEED")] | //button[contains(text(), "PROCEED")]', { timeout: 8000 });
-            console.log("🔘 Bouton 'PROCEED' détecté, on force le passage...");
-            await proceedBtn.click();
-            await page.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => {});
-        } catch (e) {
-            console.log("ℹ️ Pas de bouton 'PROCEED', on continue.");
-        }
-
-        // --- NAVIGATION ARBORESCENCE ---
-        console.log("📂 Accès à l'emploi du temps...");
+        // --- ATTENTE ET CLIC SUR TOUS LES PROCEED ---
+        console.log("🛡️ Passage de la sécurité (MFA/Proceed)...");
         await new Promise(r => setTimeout(r, 5000)); 
 
-        const chemin = ["Etudiants", "IUT LAVAL", "Dpt MMI", "BUT MMI1", "TD11", "11B"];
-        for (const texte of chemin) {
-            console.log(`📍 Sélection de : ${texte}`);
-            const element = await page.waitForSelector(`xpath///span[contains(text(), "${texte}")]`, { visible: true, timeout: 15000 });
-            const icone = await page.$(`xpath///span[contains(text(), "${texte}")]/preceding-sibling::img[contains(@class, "x-tree3-node-joint")]`);
-            
-            if (icone && texte !== "11B") {
-                await icone.click();
-            } else {
-                await element.click({ clickCount: 2 });
-            }
-            await new Promise(r => setTimeout(r, 3000)); 
-        }
-
-        // --- EXTRACTION ET ENVOI ---
-        const planningData = await page.evaluate(() => {
-            const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-            return Array.from(document.querySelectorAll('.eventText'))
-                .filter(b => b.innerText.trim().length > 1)
-                .map(bloc => {
-                    const container = bloc.parentElement.parentElement;
-                    const left = parseInt(container.style.left) || 0;
-                    return {
-                        jour: jours[Math.round(left / 245)] || "Inconnu",
-                        matiere: bloc.innerText.split('\n')[0],
-                        _position: { x: left, y: parseInt(container.style.top) || 0 }
-                    };
-                });
+        // On essaie de cliquer sur tout ce qui ressemble à "PROCEED" ou "CONTINUE"
+        await page.evaluate(() => {
+            const elements = Array.from(document.querySelectorAll('span, button, a'));
+            elements.forEach(el => {
+                const txt = el.innerText.toUpperCase();
+                if (txt.includes('PROCEED') || txt.includes('CONTINUE') || txt.includes('CONTINUER')) {
+                    el.click();
+                }
+            });
         });
 
-        fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
+        console.log("⏳ Attente de redirection vers le planning...");
+        await new Promise(r => setTimeout(r, 10000)); 
+
+        // --- NAVIGATION ARBORESCENCE ---
+        console.log("📂 Recherche de 'Etudiants'...");
+        
+        // On essaie de cliquer sur "Etudiants" même si c'est caché
+        const success = await page.evaluate(() => {
+            const spans = Array.from(document.querySelectorAll('span'));
+            const target = spans.find(s => s.innerText.trim() === "Etudiants");
+            if (target) {
+                target.scrollIntoView();
+                // On simule un double clic pour ouvrir
+                const event = new MouseEvent('dblclick', { view: window, bubbles: true, cancelable: true });
+                target.dispatchEvent(event);
+                return true;
+            }
+            return false;
+        });
+
+        if (!success) throw new Error("Le mot 'Etudiants' est introuvable sur cette page.");
+
+        console.log("✅ Dossier 'Etudiants' ouvert. On continue le chemin...");
+        
+        // On attend que le reste s'affiche (IUT LAVAL, etc.)
+        await new Promise(r => setTimeout(r, 5000));
+
+        // Note : On s'arrête ici pour tester si l'ouverture d'Etudiants fonctionne enfin
+        console.log("📍 Test d'ouverture réussi !");
+
+        // --- ENVOI D'UNE PHOTO POUR PREUVE ---
+        await page.screenshot({ path: 'final_test.png' });
         const client = new ftp.Client();
         await client.access({ host: process.env.FTP_HOST, user: process.env.FTP_USER, password: process.env.FTP_PASS, secure: false });
-        await client.uploadFrom("planning.json", "public_html/planning.json");
-        console.log("🚀 LE PLANNING EST ENFIN EN LIGNE !");
+        await client.uploadFrom("final_test.png", "public_html/final_test.png");
         client.close();
+        
+        console.log("📸 Regarde final_test.png sur ton site !");
 
     } catch (error) {
-        console.error("❌ ERREUR :", error.message);
+        console.error("❌ ERREUR FATALE :", error.message);
+        // Screenshot de secours
+        await page.screenshot({ path: 'error.png' });
+        const client = new ftp.Client();
+        try {
+            await client.access({ host: process.env.FTP_HOST, user: process.env.FTP_USER, password: process.env.FTP_PASS, secure: false });
+            await client.uploadFrom("error.png", "public_html/error.png");
+        } catch(e) {}
+        client.close();
     } finally {
         await browser.close();
     }
