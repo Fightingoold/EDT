@@ -1,7 +1,7 @@
 [
   {
     "jour": "Lundi",
-    "matiere": "R2.18 - TDm11 - ML",
+    "matiere": "R2.18",
     "horaire": "08h00 - 09h30",
     "type": "TD",
     "salle": "TANGO-MMI",
@@ -25,7 +25,7 @@
   },
   {
     "jour": "Lundi",
-    "matiere": "R2.08b - RH - TD11",
+    "matiere": "R2.08",
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "JAVA-MMI",
@@ -41,7 +41,7 @@
   },
   {
     "jour": "Mardi",
-    "matiere": "R2.12 TP B - AMP",
+    "matiere": "R2.12",
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "SALSA-MMI",
@@ -57,7 +57,7 @@
   },
   {
     "jour": "Mardi",
-    "matiere": "R2.01 - TP B",
+    "matiere": "R2.01",
     "horaire": "13h30 - 15h00",
     "type": "TP",
     "salle": "SALSA-MMI",
@@ -65,7 +65,7 @@
   },
   {
     "jour": "Mardi",
-    "matiere": "R2.20 - TD11",
+    "matiere": "R2.20",
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "ROCK-MMI",
@@ -81,7 +81,7 @@
   },
   {
     "jour": "Mercredi",
-    "matiere": "R2.16 - RL - TD11",
+    "matiere": "R2.16",
     "horaire": "13h30 - 15h00",
     "type": "TD",
     "salle": "JAVA-MMI",
@@ -89,7 +89,7 @@
   },
   {
     "jour": "Mercredi",
-    "matiere": "R2.15 - AC (Epreuve Pratique)",
+    "matiere": "R2.15",
     "horaire": "15h00 - 16h30",
     "type": "PROMO",
     "salle": "Amphi 3",
@@ -97,7 +97,7 @@
   },
   {
     "jour": "Mercredi",
-    "matiere": "R2.14 - TDm11",
+    "matiere": "R2.14",
     "horaire": "16h30 - 18h00",
     "type": "TD",
     "salle": "TD4-MMI",
@@ -105,7 +105,7 @@
   },
   {
     "jour": "Jeudi",
-    "matiere": "R2.13a TP B - SI",
+    "matiere": "R2.13",
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "SALSA-MMI",
@@ -113,7 +113,7 @@
   },
   {
     "jour": "Jeudi",
-    "matiere": "R2.03a- TD11",
+    "matiere": "R2.03",
     "horaire": "11h00 - 12h30",
     "type": "TD",
     "salle": "ROCK-MMI",
@@ -129,7 +129,7 @@
   },
   {
     "jour": "Jeudi",
-    "matiere": "R2.17 - TD11",
+    "matiere": "R2.17",
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "JAVA-MMI",
