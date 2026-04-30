@@ -1,48 +1,72 @@
 name: Auto-Update Planning
 on:
   schedule:
-    - cron: '0 5 * * *'
-  workflow_dispatch:
+    - cron: '0 5 * * *' # Tourne tous les matins à 5h
+  workflow_dispatch: # Permet de lancer manuellement pour tester
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: 📂 Récupération du code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      - name: 🟢 Installation de Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Install Google Chrome
+      - name: 🌐 Installation de Chrome
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
 
-      - name: Install Dependencies
+      - name: 📦 Installation des dépendances
         run: npm install
 
-      - name: Run Scraper
+      - name: 🤖 Exécution du Scraping
         run: node scrap.js
         env:
           ADE_USER: ${{ secrets.ADE_USER }}
           ADE_PASS: ${{ secrets.ADE_PASS }}
           PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
 
-      - name: 📤 FTP Upload
+      # --- OPTION 1 : SAUVEGARDE SUR GITHUB (Sûr à 100%) ---
+      - name: 💾 Sauvegarde locale sur GitHub
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add planning.json
+          git commit -m "Update planning data" || echo "Pas de changement"
+          git push
+
+      # --- OPTION 2 : ENVOI FTP (Si l'université accepte) ---
+      - name: 📤 Transfert vers le serveur perso (Laval)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        continue-on-error: true # Si le FTP bug, le reste du script ne plante pas
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
           local-dir: ./
           server-dir: public_html/
+          protocol: ftp
+          port: 21
+          passive: true # Crucial pour les pare-feux
           exclude: |
             **/.git*
             **/node_modules/**
             scrap.js
             package.json
             package-lock.json
-            main.yml
+            .github/**
+
+      # --- OPTION 3 : DEBUG (Si ça foire encore) ---
+      - name: 📸 Récupération des captures d'écran en cas d'erreur
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-files
+          path: |
+            error.png
+            planning.json
