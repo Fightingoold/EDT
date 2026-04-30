@@ -31,7 +31,7 @@ const fs = require('fs');
 
         // --- NAVIGATION BILINGUE (FR/EN) ---
         const etapes = [
-            ["Etudiants", "Students"],
+            ["Etudiants", "Trainees"],
             ["IUT LAVAL", "IUT LAVAL"],
             ["Dpt MMI", "Dpt MMI"],
             ["BUT MMI1", "BUT MMI1"],
