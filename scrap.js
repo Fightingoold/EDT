@@ -3,10 +3,15 @@ const fs = require('fs');
 const ftp = require("basic-ftp");
 
 (async () => {
-    // Configuration Puppeteer pour GitHub Actions (sans interface graphique et sécurisé)
+    // Configuration pour GitHub Actions : on utilise le chemin de Chrome défini dans le .yml
     const browser = await puppeteer.launch({ 
         headless: "new", 
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage'
+        ] 
     });
     
     const page = await browser.newPage();
@@ -15,9 +20,9 @@ const ftp = require("basic-ftp");
         console.log("🚀 Connexion au portail planning...");
         await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp');
 
-        // --- ÉTAPE 1 : AUTHENTIFICATION VIA SECRETS ---
+        // --- ÉTAPE 1 : AUTHENTIFICATION ---
         await page.waitForSelector('#username', { visible: true });
-        // Utilisation des variables d'environnement GitHub
+        // Utilise les secrets de GitHub ou tes identifiants par défaut en local
         await page.type('#username', process.env.ADE_USER || 'i2402646'); 
         await page.type('#password', process.env.ADE_PASS || 'Dtu823hz');
         
@@ -26,12 +31,12 @@ const ftp = require("basic-ftp");
             page.waitForNavigation({ waitUntil: 'networkidle0' }),
         ]);
 
-        // --- ÉTAPE 2 : NAVIGATION ---
+        // --- ÉTAPE 2 : NAVIGATION VERS TON GROUPE ---
         const continuerBtn = await page.waitForSelector('xpath///span[contains(., "Continuer")]');
         await continuerBtn.click();
         await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
-        // Chemin vers ton groupe 11B
+        // Chemin pour le groupe 11B
         const chemin = ["Etudiants", "IUT LAVAL", "Dpt MMI", "BUT MMI1", "TD11", "11B"];
         for (let i = 0; i < chemin.length; i++) {
             const texte = chemin[i];
@@ -52,7 +57,7 @@ const ftp = require("basic-ftp");
             }
         }
 
-        // --- ÉTAPE 3 : EXTRACTION ULTRA-PRÉCISE ---
+        // --- ÉTAPE 3 : EXTRACTION DES DONNÉES ---
         console.log("📊 Analyse du planning...");
         await new Promise(r => setTimeout(r, 5000)); 
 
@@ -72,24 +77,19 @@ const ftp = require("basic-ftp");
                 const lignes = bloc.innerText.split('\n').map(s => s.trim()).filter(s => s !== "");
                 const texteComplet = bloc.innerText;
 
-                // Nettoyage Horaire (format précis 00h00)
                 const ligneHoraireBrute = lignes.find(l => l.includes('h') && l.includes('-')) || "";
                 const matchHoraire = ligneHoraireBrute.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
                 const horairePropre = matchHoraire ? matchHoraire[0] : "N/C";
 
-                // Identification Salle
                 const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "Inconnue";
 
-                // Identification Matière (Code R... ou SAé...)
                 const matchCode = lignes[0].match(/(SAé\s*\d\.\d\d[a-z]?|R\d\.\d\d[a-z]?)/i);
                 const matiereCode = matchCode ? matchCode[0].trim() : lignes[0];
 
-                // Type de cours
                 let typeCours = "Promo Entière";
                 if (texteComplet.toUpperCase().includes("TP")) typeCours = "TP";
                 else if (texteComplet.toUpperCase().includes("TD")) typeCours = "TD";
 
-                // Extraction Profs (Filtre les majuscules, exclut salle et groupes)
                 const listeProfs = lignes.filter(l => {
                     const estMaj = l === l.toUpperCase();
                     const nEstPasGroupe = !/^(TD|TP|GRP|BUT|MMI|11B|11A)/i.test(l);
@@ -105,7 +105,7 @@ const ftp = require("basic-ftp");
                     type: typeCours,
                     salle: salle,
                     horaire: horairePropre,
-                    prof: listeProfs.join(', ') || "AUTONOMIE", // Gestion autonomie
+                    prof: listeProfs.join(', ') || "AUTONOMIE",
                     _position: { x: leftValue, y: topValue }
                 };
             })
@@ -116,23 +116,23 @@ const ftp = require("basic-ftp");
             );
         });
 
-        // --- ÉTAPE 4 : SAUVEGARDE LOCALE ---
+        // --- ÉTAPE 4 : TRI ET SAUVEGARDE LOCALE ---
         planningData.sort((a, b) => a._position.x - b._position.x || a._position.y - b._position.y);
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log("✅ Fichier planning.json généré.");
+        console.log("✅ Fichier planning.json généré localement.");
 
-        // --- ÉTAPE 5 : ENVOI FTP AUTOMATIQUE ---
+        // --- ÉTAPE 5 : TRANSFERT FTP ---
         const client = new ftp.Client();
         try {
-            console.log("📤 Connexion FTP...");
+            console.log("📤 Connexion FTP en cours...");
             await client.access({
-                host: "planning.univ-lemans.fr/direct/myplanning.jsp",
-                user: process.env.FTP_USER,
-                password: process.env.FTP_PASS,
+                host: process.env.FTP_HOST || "perso.univ-lemans.fr",
+                user: process.env.FTP_USER || "i2402646",
+                password: process.env.FTP_PASS || "Dtu823hz",
                 secure: false
             });
             await client.uploadFrom("planning.json", "public_html/planning.json"); 
-            console.log("🚀 Planning mis en ligne avec succès !");
+            console.log("🚀 Succès ! Le planning est en ligne.");
         } catch (ftpErr) {
             console.error("❌ Erreur FTP :", ftpErr.message);
         } finally {
@@ -140,7 +140,7 @@ const ftp = require("basic-ftp");
         }
 
     } catch (error) {
-        console.error("❌ ERREUR SCRAPER :", error);
+        console.error("❌ ERREUR GLOBALE :", error);
     } finally {
         await browser.close();
         console.log("👋 Navigateur fermé.");

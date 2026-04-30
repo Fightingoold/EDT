@@ -1,8 +1,8 @@
 name: Auto-Update Planning
 on:
   schedule:
-    - cron: '0 5 * * *' # S'exécute tous les jours à 5h00 UTC
-  workflow_dispatch: # Bouton manuel
+    - cron: '0 5 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,20 +15,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
 
-      - name: Install Dependencies and Chrome
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Chrome
         run: |
-          npm install
-          # On installe explicitement le binaire de Chrome pour Puppeteer
-          npx puppeteer browsers install chrome
+          # On utilise sudo pour éviter le "Permission denied"
+          sudo npx @puppeteer/browsers install chrome --path /home/runner/work/EDT/EDT/chrome
 
       - name: Run Scraper
         run: node scrap.js
         env:
-          # Ces noms doivent correspondre EXACTEMENT à tes Secrets GitHub
           ADE_USER: ${{ secrets.ADE_USER }}
           ADE_PASS: ${{ secrets.ADE_PASS }}
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
+          # On indique à Puppeteer où on a installé Chrome
+          PUPPETEER_EXECUTABLE_PATH: /home/runner/work/EDT/EDT/chrome/chrome/linux-147.0.7727.57/chrome-linux64/chrome
