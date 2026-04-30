@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-    console.log("🎬 Restauration du MMIDASH-BOT (Extraction Précise)...");
+    console.log("🎬 Scraping Haute Précision : Matières & Profs épurés...");
     
     const browser = await puppeteer.launch({ 
         headless: "new", 
@@ -14,7 +14,7 @@ const fs = require('fs');
     await page.setViewport({ width: 1920, height: 1080 });
 
     try {
-        console.log("🚀 Connexion et Bypass Proceed...");
+        console.log("🚀 Connexion...");
         await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp', { waitUntil: 'networkidle2' });
 
         await page.waitForSelector('#username', { timeout: 15000 });
@@ -35,7 +35,6 @@ const fs = require('fs');
 
         await new Promise(r => setTimeout(r, 8000)); 
 
-        // Navigation (Trainees car tu as corrigé ça)
         const etapes = [["Etudiants", "Trainees"], ["IUT LAVAL", "IUT LAVAL"], ["Dpt MMI", "Dpt MMI"], ["BUT MMI1", "BUT MMI1"], ["TD11", "TD11"], ["11B", "11B"]];
         
         for (const [fr, en] of etapes) {
@@ -54,14 +53,13 @@ const fs = require('fs');
                     const icon = span?.parentElement?.querySelector('.x-tree3-node-joint');
                     if (icon) icon.click();
                 }, fr, en);
-                await new Promise(r => setTimeout(r, 2000));
+                await new Promise(r => setTimeout(r, 2500));
             } else {
                 await handle.click({ clickCount: 2 });
                 await new Promise(r => setTimeout(r, 10000));
             }
         }
 
-        // --- L'EXTRACTION QUI MARCHE VRAIMENT ---
         const planningData = await page.evaluate(() => {
             const joursSemaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
             return Array.from(document.querySelectorAll('.eventText')).map(bloc => {
@@ -70,43 +68,43 @@ const fs = require('fs');
                 const texteBrut = bloc.innerText.trim();
                 const lignes = texteBrut.split('\n').map(s => s.trim()).filter(s => s !== "");
                 
-                // On cherche l'horaire pour l'isoler
+                // 1. MATIÈRE : On ne garde que le code (R.XXX ou SAE.XXX)
+                let matiere = lignes[0] || "Cours";
+                const codeMatch = matiere.match(/(R\d\.\d+|SAE\d\.\d+)/i);
+                if (codeMatch) matiere = codeMatch[0].toUpperCase();
+
+                // 2. HORAIRE
                 const horaireMatch = texteBrut.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
                 const horaire = horaireMatch ? horaireMatch[0].replace(/\s/g, '').replace('-', ' - ') : "N/C";
                 
-                // La matière est TOUJOURS la première ligne
-                const matiere = lignes[0] || "Cours";
-
-                // Le type (TP/TD/Promo)
+                // 3. TYPE
                 let type = "PROMO";
                 if (texteBrut.toUpperCase().includes('TP')) type = "TP";
                 else if (texteBrut.toUpperCase().includes('TD')) type = "TD";
 
-                // La salle est souvent la ligne qui contient "MMI" ou "Amphi"
+                // 4. SALLE
                 const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C";
 
-                // Le prof est généralement la dernière ligne, mais on vérifie qu'elle n'est pas égale à la salle
-                let prof = "N/C";
+                // 5. PROF : On épure pour ne garder que le Nom de famille
+                let profRaw = "N/C";
                 if (lignes.length >= 3) {
                     const derniere = lignes[lignes.length - 1];
                     const avantDerniere = lignes[lignes.length - 2];
-                    // Si la dernière ligne est la salle, le prof est juste au-dessus
-                    prof = (derniere === salle) ? avantDerniere : derniere;
+                    profRaw = (derniere === salle) ? avantDerniere : derniere;
                 }
+                // Regex pour garder seulement les mots en majuscules (Nom) et ignorer les prénoms ou bruits
+                let prof = profRaw.split(' ').filter(word => word === word.toUpperCase() && word.length > 1).join(' ');
+                if (!prof) prof = profRaw; // Fallback si pas de majuscules
 
                 return {
                     jour: joursSemaine[Math.round(left / 245)] || "Inconnu",
-                    matiere: matiere,
-                    horaire: horaire,
-                    type: type,
-                    salle: salle,
-                    prof: prof
+                    matiere, horaire, type, salle, prof
                 };
-            }).filter(c => c.horaire !== "N/C"); // On vire les blocs vides
+            }).filter(c => c.horaire !== "N/C");
         });
 
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log(`✅ Extraction terminée avec succès.`);
+        console.log(`✅ Extraction épurée terminée.`);
 
     } catch (error) {
         console.error("❌ ERREUR :", error.message);
