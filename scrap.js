@@ -3,24 +3,33 @@ const fs = require('fs');
 const ftp = require("basic-ftp");
 
 (async () => {
-    // Configuration pour GitHub Actions : on utilise le chemin de Chrome défini dans le .yml
+    console.log("🎬 Démarrage du script...");
+    
     const browser = await puppeteer.launch({ 
-    headless: "new", 
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
-    args: ['--no-sandbox', '--disable-setuid-sandbox'] 
-});
+        headless: "new", 
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null, 
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--window-size=1920,1080'
+        ] 
+    });
     
     const page = await browser.newPage();
+    await page.setViewport({ width: 1920, height: 1080 });
 
     try {
         console.log("🚀 Connexion au portail planning...");
-        await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp');
+        await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp', { waitUntil: 'networkidle2' });
 
         // --- ÉTAPE 1 : AUTHENTIFICATION ---
+        console.log("🔑 Authentification en cours...");
         await page.waitForSelector('#username', { visible: true });
-        // Utilise les secrets de GitHub ou tes identifiants par défaut en local
-        await page.type('#username', process.env.ADE_USER || 'i2402646'); 
-        await page.type('#password', process.env.ADE_PASS || 'Dtu823hz');
+        
+        // Utilisation des variables d'environnement de GitHub
+        await page.type('#username', process.env.ADE_USER); 
+        await page.type('#password', process.env.ADE_PASS);
         
         await Promise.all([
             page.click('#submitBtn'),
@@ -28,15 +37,25 @@ const ftp = require("basic-ftp");
         ]);
 
         // --- ÉTAPE 2 : NAVIGATION VERS TON GROUPE ---
-        const continuerBtn = await page.waitForSelector('xpath///span[contains(., "Continuer")]');
+        console.log("🖱️ Recherche du bouton de validation...");
+        
+        // Sélecteur plus souple pour gérer "Continuer" ou "Continue"
+        const continuerBtn = await page.waitForSelector('xpath///span[contains(text(), "Continu")]', { visible: true, timeout: 60000 });
+        await new Promise(r => setTimeout(r, 2000)); // Petit temps de pause pour éviter le clic fantôme
         await continuerBtn.click();
-        await page.waitForNavigation({ waitUntil: 'networkidle2' });
+        
+        console.log("📂 Navigation dans l'arborescence...");
+        // On attend que l'arborescence (le menu de gauche) soit là
+        await page.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => console.log("Navigation timeout (ignore)"));
+        await new Promise(r => setTimeout(r, 5000)); 
 
         // Chemin pour le groupe 11B
         const chemin = ["Etudiants", "IUT LAVAL", "Dpt MMI", "BUT MMI1", "TD11", "11B"];
         for (let i = 0; i < chemin.length; i++) {
             const texte = chemin[i];
+            console.log(`📍 Sélection de : ${texte}`);
             const xpathIcone = `xpath///span[text()="${texte}"]/preceding-sibling::img[contains(@class, "x-tree3-node-joint")]`;
+            
             try {
                 const icone = await page.waitForSelector(xpathIcone, { visible: true, timeout: 5000 });
                 if (i === chemin.length - 1) {
@@ -45,16 +64,17 @@ const ftp = require("basic-ftp");
                 } else {
                     await icone.click();
                 }
-                await new Promise(r => setTimeout(r, 2000)); 
+                await new Promise(r => setTimeout(r, 2500)); 
             } catch (err) {
+                // Si l'icône "+" n'est pas trouvée, on tente le double clic sur le texte
                 const node = await page.waitForSelector(`xpath///span[text()="${texte}"]`);
                 await node.click({ clickCount: 2 });
-                await new Promise(r => setTimeout(r, 2000));
+                await new Promise(r => setTimeout(r, 2500));
             }
         }
 
         // --- ÉTAPE 3 : EXTRACTION DES DONNÉES ---
-        console.log("📊 Analyse du planning...");
+        console.log("📊 Analyse des événements du planning...");
         await new Promise(r => setTimeout(r, 5000)); 
 
         const planningData = await page.evaluate(() => {
@@ -112,19 +132,19 @@ const ftp = require("basic-ftp");
             );
         });
 
-        // --- ÉTAPE 4 : TRI ET SAUVEGARDE LOCALE ---
+        // --- ÉTAPE 4 : TRI ET SAUVEGARDE ---
         planningData.sort((a, b) => a._position.x - b._position.x || a._position.y - b._position.y);
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log("✅ Fichier planning.json généré localement.");
+        console.log("✅ Fichier planning.json généré.");
 
         // --- ÉTAPE 5 : TRANSFERT FTP ---
         const client = new ftp.Client();
         try {
             console.log("📤 Connexion FTP en cours...");
             await client.access({
-                host: process.env.FTP_HOST || "perso.univ-lemans.fr",
-                user: process.env.FTP_USER || "i2402646",
-                password: process.env.FTP_PASS || "Dtu823hz",
+                host: process.env.FTP_HOST,
+                user: process.env.FTP_USER,
+                password: process.env.FTP_PASS,
                 secure: false
             });
             await client.uploadFrom("planning.json", "public_html/planning.json"); 
@@ -137,6 +157,7 @@ const ftp = require("basic-ftp");
 
     } catch (error) {
         console.error("❌ ERREUR GLOBALE :", error);
+        // On pourrait ajouter ici une capture d'écran pour débugger
     } finally {
         await browser.close();
         console.log("👋 Navigateur fermé.");
