@@ -27,7 +27,6 @@ const ftp = require("basic-ftp");
         console.log("🔑 Authentification en cours...");
         await page.waitForSelector('#username', { visible: true });
         
-        // Utilisation des variables d'environnement de GitHub
         await page.type('#username', process.env.ADE_USER); 
         await page.type('#password', process.env.ADE_PASS);
         
@@ -36,45 +35,46 @@ const ftp = require("basic-ftp");
             page.waitForNavigation({ waitUntil: 'networkidle0' }),
         ]);
 
-        // --- ÉTAPE 2 : NAVIGATION VERS TON GROUPE ---
-        console.log("🖱️ Recherche du bouton de validation...");
+        // --- ÉTAPE 2 : NAVIGATION FACULTATIVE ---
+        console.log("🖱️ Vérification de la page intermédiaire...");
+        try {
+            // On attend seulement 5 secondes : si c'est pas là, on ignore
+            const continuerBtn = await page.waitForSelector('xpath///span[contains(text(), "Continu")]', { visible: true, timeout: 5000 });
+            console.log("✅ Bouton 'Continuer' trouvé, clic...");
+            await continuerBtn.click();
+            await page.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => {});
+        } catch (err) {
+            console.log("ℹ️ Pas de bouton 'Continuer', accès direct probablement.");
+        }
         
-        // Sélecteur plus souple pour gérer "Continuer" ou "Continue"
-        const continuerBtn = await page.waitForSelector('xpath///span[contains(text(), "Continu")]', { visible: true, timeout: 60000 });
-        await new Promise(r => setTimeout(r, 2000)); // Petit temps de pause pour éviter le clic fantôme
-        await continuerBtn.click();
-        
-        console.log("📂 Navigation dans l'arborescence...");
-        // On attend que l'arborescence (le menu de gauche) soit là
-        await page.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => console.log("Navigation timeout (ignore)"));
+        console.log("📂 Recherche de l'arborescence...");
         await new Promise(r => setTimeout(r, 5000)); 
 
-        // Chemin pour le groupe 11B
+        // Chemin pour le groupe 11B (MMI1 Laval)
         const chemin = ["Etudiants", "IUT LAVAL", "Dpt MMI", "BUT MMI1", "TD11", "11B"];
         for (let i = 0; i < chemin.length; i++) {
             const texte = chemin[i];
-            console.log(`📍 Sélection de : ${texte}`);
+            console.log(`📍 Sélection : ${texte}`);
             const xpathIcone = `xpath///span[text()="${texte}"]/preceding-sibling::img[contains(@class, "x-tree3-node-joint")]`;
             
             try {
-                const icone = await page.waitForSelector(xpathIcone, { visible: true, timeout: 5000 });
+                const icone = await page.waitForSelector(xpathIcone, { visible: true, timeout: 8000 });
                 if (i === chemin.length - 1) {
                     const finalNode = await page.waitForSelector(`xpath///span[text()="${texte}"]`);
                     await finalNode.click();
                 } else {
                     await icone.click();
                 }
-                await new Promise(r => setTimeout(r, 2500)); 
+                await new Promise(r => setTimeout(r, 2000)); 
             } catch (err) {
-                // Si l'icône "+" n'est pas trouvée, on tente le double clic sur le texte
                 const node = await page.waitForSelector(`xpath///span[text()="${texte}"]`);
                 await node.click({ clickCount: 2 });
-                await new Promise(r => setTimeout(r, 2500));
+                await new Promise(r => setTimeout(r, 2000));
             }
         }
 
-        // --- ÉTAPE 3 : EXTRACTION DES DONNÉES ---
-        console.log("📊 Analyse des événements du planning...");
+        // --- ÉTAPE 3 : EXTRACTION ---
+        console.log("📊 Extraction des cours...");
         await new Promise(r => setTimeout(r, 5000)); 
 
         const planningData = await page.evaluate(() => {
@@ -111,8 +111,7 @@ const ftp = require("basic-ftp");
                     const nEstPasGroupe = !/^(TD|TP|GRP|BUT|MMI|11B|11A)/i.test(l);
                     const nEstPasMatiere = !/^[R|S]\d\.\d\d/i.test(l);
                     const nEstPasSalle = l !== salle;
-                    const nEstPasHoraire = !matchHoraire || !l.includes(matchHoraire[0]);
-                    return estMaj && nEstPasGroupe && nEstPasMatiere && nEstPasSalle && nEstPasHoraire && l.length > 3;
+                    return estMaj && nEstPasGroupe && nEstPasMatiere && nEstPasSalle && l.length > 3;
                 });
 
                 return {
@@ -132,15 +131,13 @@ const ftp = require("basic-ftp");
             );
         });
 
-        // --- ÉTAPE 4 : TRI ET SAUVEGARDE ---
+        // --- ÉTAPE 4 : SAUVEGARDE ET ENVOI ---
         planningData.sort((a, b) => a._position.x - b._position.x || a._position.y - b._position.y);
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log("✅ Fichier planning.json généré.");
 
-        // --- ÉTAPE 5 : TRANSFERT FTP ---
         const client = new ftp.Client();
         try {
-            console.log("📤 Connexion FTP en cours...");
+            console.log("📤 Envoi FTP...");
             await client.access({
                 host: process.env.FTP_HOST,
                 user: process.env.FTP_USER,
@@ -148,18 +145,16 @@ const ftp = require("basic-ftp");
                 secure: false
             });
             await client.uploadFrom("planning.json", "public_html/planning.json"); 
-            console.log("🚀 Succès ! Le planning est en ligne.");
+            console.log("🚀 C'EST EN LIGNE !");
         } catch (ftpErr) {
-            console.error("❌ Erreur FTP :", ftpErr.message);
+            console.error("❌ FTP Erreur:", ftpErr.message);
         } finally {
             client.close();
         }
 
     } catch (error) {
-        console.error("❌ ERREUR GLOBALE :", error);
-        // On pourrait ajouter ici une capture d'écran pour débugger
+        console.error("❌ ERREUR:", error);
     } finally {
         await browser.close();
-        console.log("👋 Navigateur fermé.");
     }
 })();
