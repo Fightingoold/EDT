@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-    console.log("🎬 Diagnostic MMIDASH-BOT (Mode Bypass Proceed)...");
+    console.log("🎬 Restauration du MMIDASH-BOT (Extraction Précise)...");
     
     const browser = await puppeteer.launch({ 
         headless: "new", 
@@ -14,7 +14,7 @@ const fs = require('fs');
     await page.setViewport({ width: 1920, height: 1080 });
 
     try {
-        console.log("🚀 Connexion à l'ENT...");
+        console.log("🚀 Connexion et Bypass Proceed...");
         await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp', { waitUntil: 'networkidle2' });
 
         await page.waitForSelector('#username', { timeout: 15000 });
@@ -25,93 +25,92 @@ const fs = require('fs');
             page.waitForNavigation({ waitUntil: 'networkidle0' })
         ]);
 
-        // --- NOUVEAU : BYPASS DES BOUTONS INTERMÉDIAIRES ---
-        console.log("⏳ Vérification des boutons Proceed/Continuer...");
-        await new Promise(r => setTimeout(r, 5000)); // On laisse la page se poser
-
+        await new Promise(r => setTimeout(r, 5000));
         await page.evaluate(() => {
-            const labels = ["PROCEED", "CONTINUER", "CONTINUE", "ACCÉDER", "ACCEDER"];
-            const elements = Array.from(document.querySelectorAll('button, span, a, input[type="button"]'));
-            const target = elements.find(el => labels.some(l => el.innerText.toUpperCase().includes(l)));
-            if (target) {
-                console.log("Bouton trouvé, clic en cours...");
-                target.click();
-            }
+            const btn = Array.from(document.querySelectorAll('button, span, a')).find(el => 
+                ["PROCEED", "CONTINUER", "CONTINUE"].some(l => el.innerText.toUpperCase().includes(l))
+            );
+            if (btn) btn.click();
         });
 
-        // Attente après le clic sur Proceed
         await new Promise(r => setTimeout(r, 8000)); 
 
-        const etapes = [
-            ["Etudiants", "Trainees"],
-            ["IUT LAVAL", "IUT LAVAL"],
-            ["Dpt MMI", "Dpt MMI"],
-            ["BUT MMI1", "BUT MMI1"],
-            ["TD11", "TD11"],
-            ["11B", "11B"]
-        ];
+        // Navigation (Trainees car tu as corrigé ça)
+        const etapes = [["Etudiants", "Trainees"], ["IUT LAVAL", "IUT LAVAL"], ["Dpt MMI", "Dpt MMI"], ["BUT MMI1", "BUT MMI1"], ["TD11", "TD11"], ["11B", "11B"]];
         
         for (const [fr, en] of etapes) {
-            console.log(`📍 Étape : ${fr} / ${en}`);
-            
-            try {
-                await page.waitForFunction(
-                    (f, e) => {
-                        const spans = Array.from(document.querySelectorAll('span'));
-                        return spans.some(s => (s.innerText.trim() === f || s.innerText.trim() === e) && s.offsetHeight > 0);
-                    },
-                    { timeout: 20000 }, 
-                    fr, en
-                );
-            } catch (e) {
-                console.log(`📸 Blocage sur ${fr}, capture d'écran...`);
-                await page.screenshot({ path: 'error.png', fullPage: true });
-                throw new Error(`Échec à l'étape ${fr}. Vérifie error.png`);
-            }
+            await page.waitForFunction((f, e) => {
+                const spans = Array.from(document.querySelectorAll('span'));
+                return spans.some(s => (s.innerText.trim() === f || s.innerText.trim() === e) && s.offsetHeight > 0);
+            }, { timeout: 20000 }, fr, en);
 
             const handle = await page.evaluateHandle((f, e) => {
-                return Array.from(document.querySelectorAll('span'))
-                            .find(s => s.innerText.trim() === f || s.innerText.trim() === e);
+                return Array.from(document.querySelectorAll('span')).find(s => s.innerText.trim() === f || s.innerText.trim() === e);
             }, fr, en);
 
             if (fr !== "11B") {
                 await page.evaluate((f, e) => {
-                    const span = Array.from(document.querySelectorAll('span'))
-                                      .find(s => s.innerText.trim() === f || s.innerText.trim() === e);
+                    const span = Array.from(document.querySelectorAll('span')).find(s => s.innerText.trim() === f || s.innerText.trim() === e);
                     const icon = span?.parentElement?.querySelector('.x-tree3-node-joint');
                     if (icon) icon.click();
                 }, fr, en);
-                await new Promise(r => setTimeout(r, 2500));
+                await new Promise(r => setTimeout(r, 2000));
             } else {
                 await handle.click({ clickCount: 2 });
                 await new Promise(r => setTimeout(r, 10000));
             }
         }
 
+        // --- L'EXTRACTION QUI MARCHE VRAIMENT ---
         const planningData = await page.evaluate(() => {
             const joursSemaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-            return Array.from(document.querySelectorAll('.eventText')).filter(b => b.innerText.trim().length > 5).map(bloc => {
+            return Array.from(document.querySelectorAll('.eventText')).map(bloc => {
                 const container = bloc.parentElement.parentElement;
                 const left = parseInt(container.style.left) || 0;
-                const lignes = bloc.innerText.split('\n').map(s => s.trim()).filter(s => s !== "");
-                const horaireRaw = (bloc.innerText.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/) || [""])[0];
+                const texteBrut = bloc.innerText.trim();
+                const lignes = texteBrut.split('\n').map(s => s.trim()).filter(s => s !== "");
+                
+                // On cherche l'horaire pour l'isoler
+                const horaireMatch = texteBrut.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
+                const horaire = horaireMatch ? horaireMatch[0].replace(/\s/g, '').replace('-', ' - ') : "N/C";
+                
+                // La matière est TOUJOURS la première ligne
+                const matiere = lignes[0] || "Cours";
+
+                // Le type (TP/TD/Promo)
+                let type = "PROMO";
+                if (texteBrut.toUpperCase().includes('TP')) type = "TP";
+                else if (texteBrut.toUpperCase().includes('TD')) type = "TD";
+
+                // La salle est souvent la ligne qui contient "MMI" ou "Amphi"
+                const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C";
+
+                // Le prof est généralement la dernière ligne, mais on vérifie qu'elle n'est pas égale à la salle
+                let prof = "N/C";
+                if (lignes.length >= 3) {
+                    const derniere = lignes[lignes.length - 1];
+                    const avantDerniere = lignes[lignes.length - 2];
+                    // Si la dernière ligne est la salle, le prof est juste au-dessus
+                    prof = (derniere === salle) ? avantDerniere : derniere;
+                }
+
                 return {
                     jour: joursSemaine[Math.round(left / 245)] || "Inconnu",
-                    matiere: lignes[0] || "Cours",
-                    horaire: horaireRaw.replace(/\s/g, '').replace('-', ' - '),
-                    type: lignes.join(' ').toUpperCase().includes('TP') ? 'TP' : (lignes.join(' ').toUpperCase().includes('TD') ? 'TD' : 'PROMO'),
-                    salle: lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C",
-                    prof: lignes.length > 2 ? lignes[lignes.length - 1] : "N/C"
+                    matiere: matiere,
+                    horaire: horaire,
+                    type: type,
+                    salle: salle,
+                    prof: prof
                 };
-            });
+            }).filter(c => c.horaire !== "N/C"); // On vire les blocs vides
         });
 
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log(`✅ Extraction réussie !`);
+        console.log(`✅ Extraction terminée avec succès.`);
 
     } catch (error) {
         console.error("❌ ERREUR :", error.message);
-        if (!fs.existsSync('error.png')) await page.screenshot({ path: 'error.png' });
+        await page.screenshot({ path: 'error.png' });
         process.exit(1);
     } finally {
         await browser.close();
