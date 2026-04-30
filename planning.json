@@ -9,27 +9,11 @@
   },
   {
     "jour": "Lundi",
-    "matiere": "R2.18 - TDm11 - ML",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
-    "jour": "Lundi",
     "matiere": "SAé 2.02b TP B 90 - RL",
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "HIP HOP-MMI",
     "prof": "09h30 - 11h00"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "SAé 2.02b TP B 90 - RL",
-    "horaire": "",
-    "type": "TP",
-    "salle": "N/C",
-    "prof": "N/C"
   },
   {
     "jour": "Lundi",
@@ -41,27 +25,11 @@
   },
   {
     "jour": "Lundi",
-    "matiere": "SAé 2.04a - AL - TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
-    "jour": "Lundi",
     "matiere": "R2.08b - RH - TD11",
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "JAVA-MMI",
     "prof": "TDm"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "R2.08b - RH - TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
   },
   {
     "jour": "Mardi",
@@ -72,28 +40,12 @@
     "prof": "TDm"
   },
   {
-    "jour": "Lundi",
-    "matiere": "SAé 2.02e - RH - TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
     "jour": "Mardi",
     "matiere": "R2.12 TP B - AMP",
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "SALSA-MMI",
     "prof": "09h30 - 11h00"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "R2.12 TP B - AMP",
-    "horaire": "",
-    "type": "TP",
-    "salle": "N/C",
-    "prof": "N/C"
   },
   {
     "jour": "Mardi",
@@ -104,14 +56,6 @@
     "prof": "11h00 - 12h30"
   },
   {
-    "jour": "Lundi",
-    "matiere": "SAé 2.03c TP B - MC",
-    "horaire": "",
-    "type": "TP",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
     "jour": "Mardi",
     "matiere": "R2.01 - TP B",
     "horaire": "13h30 - 15h00",
@@ -120,28 +64,12 @@
     "prof": "13h30 - 15h00"
   },
   {
-    "jour": "Lundi",
-    "matiere": "R2.01 - TP B",
-    "horaire": "",
-    "type": "TP",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
     "jour": "Mardi",
     "matiere": "R2.20 - TD11",
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "ROCK-MMI",
     "prof": "TDm"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "R2.20 - TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
   },
   {
     "jour": "Mercredi",
@@ -152,28 +80,12 @@
     "prof": "Présence obligatoire"
   },
   {
-    "jour": "Lundi",
-    "matiere": "SAé 2.02 - TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
     "jour": "Mercredi",
     "matiere": "R2.16 - RL - TD11",
     "horaire": "13h30 - 15h00",
     "type": "TD",
     "salle": "JAVA-MMI",
     "prof": "TDm"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "R2.16 - RL - TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
   },
   {
     "jour": "Mercredi",
@@ -184,28 +96,12 @@
     "prof": "EP"
   },
   {
-    "jour": "Lundi",
-    "matiere": "R2.15 - AC (Epreuve Pratique)",
-    "horaire": "",
-    "type": "PROMO",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
     "jour": "Mercredi",
     "matiere": "R2.14 - TDm11",
     "horaire": "16h30 - 18h00",
     "type": "TD",
     "salle": "TD4-MMI",
     "prof": "TDm"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "R2.14 - TDm11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
   },
   {
     "jour": "Jeudi",
@@ -216,28 +112,12 @@
     "prof": "09h30 - 11h00"
   },
   {
-    "jour": "Lundi",
-    "matiere": "R2.13a TP B - SI",
-    "horaire": "",
-    "type": "TP",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
     "jour": "Jeudi",
     "matiere": "R2.03a- TD11",
     "horaire": "11h00 - 12h30",
     "type": "TD",
     "salle": "ROCK-MMI",
     "prof": "TDm"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "R2.03a- TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
   },
   {
     "jour": "Jeudi",
@@ -248,27 +128,11 @@
     "prof": "TDm"
   },
   {
-    "jour": "Lundi",
-    "matiere": "SAé 2.03a - AMP - TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
-  },
-  {
     "jour": "Jeudi",
     "matiere": "R2.17 - TD11",
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "JAVA-MMI",
     "prof": "TDm"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "R2.17 - TD11",
-    "horaire": "",
-    "type": "TD",
-    "salle": "N/C",
-    "prof": "N/C"
   }
 ]
