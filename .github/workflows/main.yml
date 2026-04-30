@@ -32,5 +32,13 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
-          # On récupère le chemin de Chrome installé par l'Action
           PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome
+
+      - name: Upload Screenshots
+        if: always() # S'exécute même si le script scrap.js plante
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: |
+            error.png
+            final_test.png
