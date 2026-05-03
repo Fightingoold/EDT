@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-    console.log("🎬 Scraping Haute Précision : Nettoyage des 'null' et détection NOM PRENOM...");
+    console.log("🎬 Scraping : Correction détection profs (Mode Souple)...");
     
     const browser = await puppeteer.launch({ 
         headless: "new", 
@@ -56,23 +56,18 @@ const fs = require('fs');
 
         const planningData = await page.evaluate(() => {
             const joursSemaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-            // Liste des trucs à virer absolument des noms de profs
-            const blacklist = ["TD", "TP", "B", "A", "BUT MMI", "MMI1", "TD11", "11B", "TDM", "EP", "SALLE"];
-
+            
             return Array.from(document.querySelectorAll('.eventText')).map(bloc => {
                 const container = bloc.parentElement.parentElement;
                 const left = parseInt(container.style.left) || 0;
-                
-                // On récupère le texte pur du bloc (ce qui est visible entre les <br>)
-                // Ça permet d'ignorer les "null" cachés dans les attributs aria-label
-                const lignes = bloc.innerText.split('\n').map(s => s.trim()).filter(s => s !== "");
+                const texteVisible = bloc.innerText.trim();
+                const lignes = texteVisible.split('\n').map(s => s.trim()).filter(s => s !== "");
 
                 // 1. HORAIRE
-                const texteComplet = bloc.innerText;
-                const horaireMatch = texteComplet.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
+                const horaireMatch = texteVisible.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
                 const horaire = horaireMatch ? horaireMatch[0].replace(/\s/g, '').replace('-', ' - ') : "N/C";
 
-                // 2. MATIÈRE (Regex pour isoler R2.01 ou SAE2.01)
+                // 2. MATIÈRE
                 let matiere = lignes[0] || "Cours";
                 const codeMatiere = matiere.match(/(R\d\.\d+|SA[Eé]\s?\d\.\d+)/i);
                 if (codeMatiere) {
@@ -82,36 +77,32 @@ const fs = require('fs');
                 // 3. SALLE
                 const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi')) || "N/C";
 
-                // 4. PROF (Logique NOM PRENOM propre)
+                // 4. PROF : On cible la ligne entre le groupe (lignes[1]) et la salle
                 let prof = "AUTONOMIE";
-                
-                // On cherche une ligne qui ressemble à un nom d'humain
-                const ligneProf = lignes.find(l => {
-                    const lUpper = l.toUpperCase();
-                    const mots = l.split(' ').filter(w => w.length > 1);
-                    return l !== salle && 
-                           !l.includes(matiere) && 
-                           !l.includes('h') && // Exclut l'horaire
-                           !blacklist.some(b => lUpper.includes(b)) &&
-                           mots.length >= 2 && mots.length <= 4 && // Un nom/prénom a 2 à 4 mots
-                           !/\d/.test(l); // Pas de chiffres dans un nom
-                });
+                // On cherche une ligne qui n'est pas le code matière, pas la salle, et qui contient des lettres
+                const indexSalle = lignes.indexOf(salle);
+                // Le prof est presque toujours à l'index 2 (3ème ligne)
+                const candidatProf = lignes[2];
 
-                if (ligneProf) {
-                    prof = ligneProf.trim().toUpperCase();
+                if (candidatProf && 
+                    candidatProf !== salle && 
+                    !candidatProf.includes(matiere) && 
+                    !candidatProf.match(/\d{2}h\d{2}/) && // Pas l'heure
+                    candidatProf.length > 3) {
+                    prof = candidatProf.toUpperCase();
                 }
 
                 return {
                     jour: joursSemaine[Math.round(left / 245)] || "Inconnu",
                     matiere, horaire, 
-                    type: texteComplet.toUpperCase().includes('TP') ? 'TP' : (texteComplet.toUpperCase().includes('TD') ? 'TD' : 'PROMO'),
+                    type: texteVisible.toUpperCase().includes('TP') ? 'TP' : (texteVisible.toUpperCase().includes('TD') ? 'TD' : 'PROMO'),
                     salle, prof
                 };
             }).filter(c => c.horaire !== "N/C");
         });
 
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log(`✅ Succès ! ${planningData.length} cours extraits.`);
+        console.log(`✅ Extraction terminée.`);
 
     } catch (error) {
         console.error("❌ ERREUR :", error.message);
