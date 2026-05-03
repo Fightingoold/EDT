@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-    console.log("🎬 Scraping Final : Nettoyage strict (NOM PRENOM & Codes Ressources)...");
+    console.log("🎬 Scraping Haute Précision : Nettoyage des 'null' et détection NOM PRENOM...");
     
     const browser = await puppeteer.launch({ 
         headless: "new", 
@@ -14,7 +14,7 @@ const fs = require('fs');
     await page.setViewport({ width: 1920, height: 1080 });
 
     try {
-        console.log("🚀 Connexion...");
+        console.log("🚀 Connexion et navigation...");
         await page.goto('https://planning.univ-lemans.fr/direct/myplanning.jsp', { waitUntil: 'networkidle2' });
 
         await page.waitForSelector('#username', { timeout: 15000 });
@@ -32,7 +32,6 @@ const fs = require('fs');
 
         await new Promise(r => setTimeout(r, 8000)); 
 
-        // Navigation (Traisnees car tu as corrigé ça)
         const etapes = [["Etudiants", "Trainees"], ["IUT LAVAL", "IUT LAVAL"], ["Dpt MMI", "Dpt MMI"], ["BUT MMI1", "BUT MMI1"], ["TD11", "TD11"], ["11B", "11B"]];
         for (const [fr, en] of etapes) {
             await page.waitForFunction((f, e) => {
@@ -57,45 +56,62 @@ const fs = require('fs');
 
         const planningData = await page.evaluate(() => {
             const joursSemaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+            // Liste des trucs à virer absolument des noms de profs
+            const blacklist = ["TD", "TP", "B", "A", "BUT MMI", "MMI1", "TD11", "11B", "TDM", "EP", "SALLE"];
+
             return Array.from(document.querySelectorAll('.eventText')).map(bloc => {
                 const container = bloc.parentElement.parentElement;
                 const left = parseInt(container.style.left) || 0;
-                let texte = bloc.innerText.trim();
                 
-                // 1. EXTRAIRE ET SUPPRIMER L'HORAIRE IMMÉDIATEMENT
-                const horaireMatch = texte.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
+                // On récupère le texte pur du bloc (ce qui est visible entre les <br>)
+                // Ça permet d'ignorer les "null" cachés dans les attributs aria-label
+                const lignes = bloc.innerText.split('\n').map(s => s.trim()).filter(s => s !== "");
+
+                // 1. HORAIRE
+                const texteComplet = bloc.innerText;
+                const horaireMatch = texteComplet.match(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/);
                 const horaire = horaireMatch ? horaireMatch[0].replace(/\s/g, '').replace('-', ' - ') : "N/C";
-                texte = texte.replace(/\d{2}h\d{2}\s*-\s*\d{2}h\d{2}/, ''); 
 
-                const lignes = texte.split('\n').map(s => s.trim()).filter(s => s !== "");
-
-                // 2. MATIÈRE : Regex stricte pour isoler le code (R ou SAE)
+                // 2. MATIÈRE (Regex pour isoler R2.01 ou SAE2.01)
                 let matiere = lignes[0] || "Cours";
-                const codeMatiere = matiere.match(/(R\d\.\d+|SAE\d\.\d+)/i);
-                if (codeMatiere) matiere = codeMatiere[0].toUpperCase();
+                const codeMatiere = matiere.match(/(R\d\.\d+|SA[Eé]\s?\d\.\d+)/i);
+                if (codeMatiere) {
+                    matiere = codeMatiere[0].toUpperCase().replace('É', 'E').replace(' ', '');
+                }
 
                 // 3. SALLE
-                const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi') || l.includes('Salles')) || "N/C";
+                const salle = lignes.find(l => l.includes('-MMI') || l.includes('Amphi')) || "N/C";
 
-                // 4. PROF : Nettoyage NOM PRENOM
-                let prof = "N/C";
-                const ligneProf = lignes.find(l => l !== salle && l !== lignes[0] && l.length > 2);
+                // 4. PROF (Logique NOM PRENOM propre)
+                let prof = "AUTONOMIE";
+                
+                // On cherche une ligne qui ressemble à un nom d'humain
+                const ligneProf = lignes.find(l => {
+                    const lUpper = l.toUpperCase();
+                    const mots = l.split(' ').filter(w => w.length > 1);
+                    return l !== salle && 
+                           !l.includes(matiere) && 
+                           !l.includes('h') && // Exclut l'horaire
+                           !blacklist.some(b => lUpper.includes(b)) &&
+                           mots.length >= 2 && mots.length <= 4 && // Un nom/prénom a 2 à 4 mots
+                           !/\d/.test(l); // Pas de chiffres dans un nom
+                });
+
                 if (ligneProf) {
-                    // On retire les parenthèses, les chiffres et on passe en majuscules
-                    prof = ligneProf.replace(/\(.*\)/g, '').replace(/\d+/g, '').trim().toUpperCase();
+                    prof = ligneProf.trim().toUpperCase();
                 }
 
                 return {
                     jour: joursSemaine[Math.round(left / 245)] || "Inconnu",
                     matiere, horaire, 
-                    type: texte.toUpperCase().includes('TP') ? 'TP' : (texte.toUpperCase().includes('TD') ? 'TD' : 'PROMO'),
+                    type: texteComplet.toUpperCase().includes('TP') ? 'TP' : (texteComplet.toUpperCase().includes('TD') ? 'TD' : 'PROMO'),
                     salle, prof
                 };
-            }).filter(c => c.horaire !== "N/C" && c.matiere !== "Cours");
+            }).filter(c => c.horaire !== "N/C");
         });
 
         fs.writeFileSync('planning.json', JSON.stringify(planningData, null, 2));
-        console.log(`✅ Planning généré : ${planningData.length} cours.`);
+        console.log(`✅ Succès ! ${planningData.length} cours extraits.`);
 
     } catch (error) {
         console.error("❌ ERREUR :", error.message);
