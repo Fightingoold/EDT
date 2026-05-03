@@ -5,23 +5,23 @@
     "horaire": "08h00 - 09h30",
     "type": "TD",
     "salle": "TANGO-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Lundi",
-    "matiere": "SAé 2.02b TP B 90 - RL",
+    "matiere": "SAE2.02",
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "HIP HOP-MMI",
-    "prof": "B"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Lundi",
-    "matiere": "SAé 2.04a - AL - TD11",
+    "matiere": "SAE2.04",
     "horaire": "11h00 - 12h30",
     "type": "TD",
     "salle": "TD4-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Lundi",
@@ -29,15 +29,15 @@
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "JAVA-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mardi",
-    "matiere": "SAé 2.02e - RH - TD11",
+    "matiere": "SAE2.02",
     "horaire": "08h00 - 09h30",
     "type": "TD",
     "salle": "TANGO-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mardi",
@@ -45,15 +45,15 @@
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "SALSA-MMI",
-    "prof": "B"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mardi",
-    "matiere": "SAé 2.03c TP B - MC",
+    "matiere": "SAE2.03",
     "horaire": "11h00 - 12h30",
     "type": "TP",
     "salle": "MAMBO-MMI",
-    "prof": "B"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mardi",
@@ -61,7 +61,7 @@
     "horaire": "13h30 - 15h00",
     "type": "TP",
     "salle": "SALSA-MMI",
-    "prof": "B"
+    "prof": "CROZET HÉLÈNE"
   },
   {
     "jour": "Mardi",
@@ -69,15 +69,15 @@
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "ROCK-MMI",
-    "prof": "TD"
+    "prof": "HOULIERE ERIC"
   },
   {
     "jour": "Mercredi",
-    "matiere": "SAé 2.02 - TD11",
+    "matiere": "SAE2.02",
     "horaire": "08h00 - 12h30",
     "type": "TD",
     "salle": "ROCK-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mercredi",
@@ -85,7 +85,7 @@
     "horaire": "13h30 - 15h00",
     "type": "TD",
     "salle": "JAVA-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mercredi",
@@ -93,7 +93,7 @@
     "horaire": "15h00 - 16h30",
     "type": "PROMO",
     "salle": "Amphi 3",
-    "prof": "BUT MMI"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mercredi",
@@ -101,7 +101,7 @@
     "horaire": "16h30 - 18h00",
     "type": "TD",
     "salle": "TD4-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Jeudi",
@@ -109,7 +109,7 @@
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "SALSA-MMI",
-    "prof": "B"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Jeudi",
@@ -117,15 +117,15 @@
     "horaire": "11h00 - 12h30",
     "type": "TD",
     "salle": "ROCK-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Jeudi",
-    "matiere": "SAé 2.03a - AMP - TD11",
+    "matiere": "SAE2.03",
     "horaire": "13h30 - 15h00",
     "type": "TD",
     "salle": "TD4-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Jeudi",
@@ -133,6 +133,6 @@
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "JAVA-MMI",
-    "prof": "TD"
+    "prof": "AUTONOMIE"
   }
 ]
