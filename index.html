@@ -14,87 +14,83 @@
             position: relative;
             display: flex;
             height: 850px;
-            min-width: 100%;
         }
 
-        /* FORCE LA LISIBILITÉ SUR MOBILE */
+        /* FIX MOBILE : Largeur fixe par colonne en vue semaine pour éviter l'écrasement */
         @media (max-width: 768px) {
-            .view-week .calendar-wrapper {
-                min-width: 800px; /* Force une largeur minimum pour que les colonnes respirent */
+            .view-week .day-column {
+                min-width: 160px;
+                flex-shrink: 0;
             }
         }
 
         .time-gutter {
-            width: 50px;
+            width: 45px;
             flex-shrink: 0;
-            position: sticky; /* Garde les heures visibles au scroll */
+            position: sticky;
             left: 0;
-            z-index: 20;
-            background: #020617;
-            border-right: 1px solid rgba(255,255,255,0.05);
+            z-index: 30;
+            background: #0f172a;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
 
         .hour-mark {
             position: absolute;
-            right: 10px;
+            right: 8px;
             transform: translateY(-50%);
             font-size: 0.65rem;
-            color: #475569;
-            font-weight: bold;
+            color: #94a3b8;
+            font-weight: 800;
         }
 
         .days-container {
             display: flex;
             flex-grow: 1;
             position: relative;
-            gap: 4px;
+            gap: 8px;
+            padding-right: 20px;
         }
 
         .day-column {
             flex: 1;
             position: relative;
             height: 100%;
-            background: rgba(255,255,255,0.01);
-            border-radius: 8px;
-            min-width: 0; /* Évite l'éclatement du flex */
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
         }
 
         .grid-line {
             position: absolute;
             left: 0; right: 0;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             pointer-events: none;
         }
 
         .course-card {
             position: absolute;
             left: 4px; right: 4px;
-            border-radius: 10px;
-            padding: 6px;
+            border-radius: 8px;
+            padding: 6px 8px;
             font-size: 0.7rem;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             z-index: 10;
             overflow: hidden;
-            transition: transform 0.2s;
+            transition: all 0.2s;
         }
-        
-        .course-card:hover { transform: scale(1.02); z-index: 50; }
 
-        .type-tp { background: linear-gradient(135deg, #065f46 0%, #059669 100%); border-left: 4px solid #34d399; }
-        .type-td { background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); border-left: 4px solid #60a5fa; }
-        .type-promo { background: linear-gradient(135deg, #9f1239 0%, #e11d48 100%); border-left: 4px solid #fb7185; }
+        .course-card:active { transform: scale(0.95); }
+
+        .type-tp { background: linear-gradient(135deg, #064e3b 0%, #059669 100%); border-left: 3px solid #34d399; }
+        .type-td { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border-left: 3px solid #60a5fa; }
+        .type-promo { background: linear-gradient(135deg, #881337 0%, #e11d48 100%); border-left: 3px solid #fb7185; }
 
         .active-btn { background: #3b82f6 !important; color: white !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Style pour les jours en vue jour */
-        .day-pill { transition: all 0.2s; flex-shrink: 0; }
     </style>
 </head>
-<body class="p-2 md:p-6">
+<body class="p-2 md:p-6 view-week">
 
     <div class="max-w-[1400px] mx-auto">
         <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -105,17 +101,36 @@
                 <button onclick="setView('week')" id="btn-week" class="px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all active-btn">Semaine</button>
             </div>
 
-            <div id="day-nav" class="hidden flex gap-2 overflow-x-auto no-scrollbar py-2 w-full md:w-auto justify-center">
-                <!-- Injecté par JS -->
-            </div>
+            <div id="day-nav" class="hidden flex gap-2 overflow-x-auto no-scrollbar py-2 w-full md:w-auto justify-center"></div>
         </header>
 
-        <!-- Container avec scroll horizontal sur mobile -->
         <div id="calendar-overflow" class="glass rounded-[2rem] p-2 md:p-4 overflow-x-auto no-scrollbar shadow-2xl">
-            <div class="calendar-wrapper" id="wrapper-element">
+            <div class="calendar-wrapper">
                 <div class="time-gutter" id="time-gutter"></div>
                 <div class="days-container" id="days-container"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de détails -->
+    <div id="course-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onclick="closeModal()">
+        <div class="glass w-full max-w-sm rounded-[2.5rem] p-8 border border-white/10 shadow-2xl" onclick="event.stopPropagation()">
+            <div id="modal-type" class="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase mb-4 tracking-widest text-white"></div>
+            <h2 id="modal-matiere" class="text-5xl font-black italic tracking-tighter mb-2"></h2>
+            <div id="modal-horaire" class="text-blue-400 font-bold text-lg mb-8 flex items-center gap-2"></div>
+            
+            <div class="space-y-4">
+                <div class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                    <span class="text-[10px] uppercase text-slate-500 font-black block mb-1 tracking-widest">Enseignant</span>
+                    <span id="modal-prof" class="text-xl font-semibold text-slate-200 uppercase"></span>
+                </div>
+                <div class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                    <span class="text-[10px] uppercase text-slate-500 font-black block mb-1 tracking-widest">Salle</span>
+                    <span id="modal-salle" class="text-xl font-semibold text-slate-200 uppercase"></span>
+                </div>
+            </div>
+
+            <button onclick="closeModal()" class="w-full mt-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95">Fermer</button>
         </div>
     </div>
 
@@ -126,7 +141,6 @@
         const PIXELS_PER_HOUR = 80;
         
         let currentView = 'week';
-        // Détermine le jour actuel, sinon Lundi par défaut
         const todayIdx = new Date().getDay() - 1;
         let currentDay = (todayIdx >= 0 && todayIdx <= 4) ? jours[todayIdx] : "Lundi";
         let planningData = [];
@@ -136,7 +150,7 @@
                 const res = await fetch('./planning.json');
                 planningData = await res.json();
                 render();
-            } catch (e) { console.error("Erreur JSON"); }
+            } catch (e) { console.error("Erreur de chargement des données."); }
         }
 
         function setView(v) {
@@ -144,76 +158,74 @@
             document.getElementById('btn-day').classList.toggle('active-btn', v === 'day');
             document.getElementById('btn-week').classList.toggle('active-btn', v === 'week');
             document.getElementById('day-nav').style.display = v === 'day' ? 'flex' : 'none';
-            
-            // Ajoute une classe au body pour le CSS spécifique
             document.body.className = v === 'day' ? 'p-2 md:p-6 view-day' : 'p-2 md:p-6 view-week';
-            
             render();
         }
 
         function timeToPx(timeStr) {
             const [h, m] = timeStr.split('h').map(Number);
-            const totalMinutes = (h - START_H) * 60 + m;
-            return (totalMinutes / 60) * PIXELS_PER_HOUR;
+            return ((h - START_H) * 60 + m) / 60 * PIXELS_PER_HOUR;
         }
+
+        function showDetails(course) {
+            document.getElementById('modal-matiere').innerText = course.matiere;
+            document.getElementById('modal-horaire').innerText = `🕒 ${course.horaire}`;
+            document.getElementById('modal-prof').innerText = course.prof;
+            document.getElementById('modal-salle').innerText = course.salle;
+            
+            const typeEl = document.getElementById('modal-type');
+            typeEl.innerText = course.type;
+            const t = course.type.toLowerCase();
+            typeEl.className = "inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase mb-4 tracking-widest ";
+            if(t.includes('tp')) typeEl.classList.add('bg-emerald-600');
+            else if(t.includes('td')) typeEl.classList.add('bg-blue-600');
+            else typeEl.classList.add('bg-rose-600');
+
+            document.getElementById('course-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('course-modal').classList.add('hidden'); }
 
         function render() {
             const gutter = document.getElementById('time-gutter');
             const container = document.getElementById('days-container');
             const dayNav = document.getElementById('day-nav');
 
-            // 1. Gutter
             let gutterHtml = '';
             for (let h = START_H; h <= END_H; h++) {
-                gutterHtml += `<div class="hour-mark" style="top: ${(h - START_H) * PIXELS_PER_HOUR}px">${h}h00</div>`;
+                gutterHtml += `<div class="hour-mark" style="top: ${(h - START_H) * PIXELS_PER_HOUR + 40}px">${h}h00</div>`;
             }
             gutter.innerHTML = gutterHtml;
 
-            // 2. Nav Jour (Améliorée)
             dayNav.innerHTML = jours.map(j => `
                 <button onclick="currentDay='${j}'; render();" 
-                    class="day-pill px-4 py-2 rounded-full border border-white/10 text-[10px] font-bold uppercase ${currentDay === j ? 'bg-blue-500 text-white border-blue-400' : 'text-white/40'}">
+                    class="px-4 py-2 rounded-full border border-white/10 text-[10px] font-bold uppercase transition-all ${currentDay === j ? 'bg-blue-500 text-white' : 'text-white/40'}">
                     ${j}
                 </button>
             `).join('');
 
-            // 3. Colonnes
             const displayJours = currentView === 'week' ? jours : [currentDay];
             container.innerHTML = displayJours.map(j => `
                 <div class="day-column">
-                    <div class="text-center text-[11px] font-black text-slate-400 uppercase py-2 sticky top-0 bg-slate-900/80 backdrop-blur-md rounded-t-lg mb-1 z-10">${j}</div>
-                    ${Array.from({length: END_H - START_H + 1}).map((_, i) => `<div class="grid-line" style="top: ${i * PIXELS_PER_HOUR + 34}px"></div>`).join('')}
-                    <div class="relative" style="height: 100%; margin-top: 34px;">
-                        ${renderCoursesForDay(j)}
+                    <div class="text-center text-[11px] font-black text-blue-400 uppercase py-3 sticky top-0 bg-slate-900/90 backdrop-blur-md rounded-t-lg z-20">${j}</div>
+                    ${Array.from({length: END_H - START_H + 1}).map((_, i) => `<div class="grid-line" style="top: ${i * PIXELS_PER_HOUR + 40}px"></div>`).join('')}
+                    <div class="relative" style="height: 100%; margin-top: 40px;">
+                        ${planningData.filter(c => c.jour === j).map(c => {
+                            const [start, end] = c.horaire.split(' - ');
+                            const top = timeToPx(start);
+                            const height = timeToPx(end) - top;
+                            const tClass = c.type.toLowerCase().includes('tp') ? 'type-tp' : c.type.toLowerCase().includes('td') ? 'type-td' : 'type-promo';
+                            return `
+                                <div class="course-card ${tClass} cursor-pointer" style="top: ${top}px; height: ${height}px;" onclick='showDetails(${JSON.stringify(c).replace(/'/g, "&apos;")})'>
+                                    <span class="font-black text-[0.7rem] truncate">${c.matiere}</span>
+                                    <span class="text-[0.6rem] font-medium truncate opacity-80">${c.prof}</span>
+                                    <span class="mt-auto text-[0.55rem] font-black opacity-40 uppercase">${c.salle}</span>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `).join('');
-        }
-
-        function renderCoursesForDay(day) {
-            return planningData.filter(c => c.jour === day).map(c => {
-                try {
-                    const [start, end] = c.horaire.split(' - ');
-                    const top = timeToPx(start);
-                    const height = timeToPx(end) - top;
-
-                    const type = c.type.toUpperCase();
-                    const typeClass = type.includes('TP') ? 'type-tp' : type.includes('TD') ? 'type-td' : 'type-promo';
-
-                    return `
-                        <div class="course-card ${typeClass}" style="top: ${top}px; height: ${height}px;">
-                            <div class="flex flex-col h-full">
-                                <div class="flex justify-between items-start gap-1">
-                                    <span class="font-black text-[0.7rem] leading-tight">${c.matiere}</span>
-                                    <span class="text-[0.55rem] font-bold whitespace-nowrap bg-black/20 px-1 rounded">${start}</span>
-                                </div>
-                                <div class="text-[0.6rem] font-semibold truncate mt-1 opacity-90">${c.prof}</div>
-                                <div class="mt-auto text-[0.6rem] font-black opacity-50 uppercase tracking-wider">${c.salle}</div>
-                            </div>
-                        </div>
-                    `;
-                } catch(e) { return ''; }
-            }).join('');
         }
 
         init();
