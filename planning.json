@@ -5,7 +5,7 @@
     "horaire": "08h00 - 09h30",
     "type": "TD",
     "salle": "TANGO-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "LEMONNIER MARIE"
   },
   {
     "jour": "Lundi",
@@ -13,7 +13,7 @@
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "HIP HOP-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "LOISEAU ROMAIN"
   },
   {
     "jour": "Lundi",
@@ -21,7 +21,7 @@
     "horaire": "11h00 - 12h30",
     "type": "TD",
     "salle": "TD4-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "LANDRY AURORE"
   },
   {
     "jour": "Lundi",
@@ -29,7 +29,7 @@
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "JAVA-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "HERVAGAULT REGIS"
   },
   {
     "jour": "Mardi",
@@ -37,7 +37,7 @@
     "horaire": "08h00 - 09h30",
     "type": "TD",
     "salle": "TANGO-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "HERVAGAULT REGIS"
   },
   {
     "jour": "Mardi",
@@ -45,7 +45,7 @@
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "SALSA-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "PUIZILLOUT ANNE-MARIE"
   },
   {
     "jour": "Mardi",
@@ -53,7 +53,7 @@
     "horaire": "11h00 - 12h30",
     "type": "TP",
     "salle": "MAMBO-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "COLET MAXENCE"
   },
   {
     "jour": "Mardi",
@@ -85,7 +85,7 @@
     "horaire": "13h30 - 15h00",
     "type": "TD",
     "salle": "JAVA-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "LOISEAU ROMAIN"
   },
   {
     "jour": "Mercredi",
@@ -93,7 +93,7 @@
     "horaire": "15h00 - 16h30",
     "type": "PROMO",
     "salle": "Amphi 3",
-    "prof": "AUTONOMIE"
+    "prof": "CORBIERE ALAIN"
   },
   {
     "jour": "Mercredi",
@@ -101,7 +101,7 @@
     "horaire": "16h30 - 18h00",
     "type": "TD",
     "salle": "TD4-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "COLET MAXENCE"
   },
   {
     "jour": "Jeudi",
@@ -109,7 +109,7 @@
     "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "SALSA-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "IKSAL SEBASTIEN"
   },
   {
     "jour": "Jeudi",
@@ -117,7 +117,7 @@
     "horaire": "11h00 - 12h30",
     "type": "TD",
     "salle": "ROCK-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "MARNE BERTRAND"
   },
   {
     "jour": "Jeudi",
@@ -125,7 +125,7 @@
     "horaire": "13h30 - 15h00",
     "type": "TD",
     "salle": "TD4-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "PUIZILLOUT ANNE-MARIE"
   },
   {
     "jour": "Jeudi",
@@ -133,6 +133,6 @@
     "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "JAVA-MMI",
-    "prof": "AUTONOMIE"
+    "prof": "THOMAS DYLAN"
   }
 ]
