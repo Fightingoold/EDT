@@ -13,14 +13,24 @@
         .calendar-wrapper {
             position: relative;
             display: flex;
-            height: 850px; /* Taille ajustée pour s'arrêter à 18h */
+            height: 850px;
             min-width: 100%;
+        }
+
+        /* FORCE LA LISIBILITÉ SUR MOBILE */
+        @media (max-width: 768px) {
+            .view-week .calendar-wrapper {
+                min-width: 800px; /* Force une largeur minimum pour que les colonnes respirent */
+            }
         }
 
         .time-gutter {
             width: 50px;
             flex-shrink: 0;
-            position: relative;
+            position: sticky; /* Garde les heures visibles au scroll */
+            left: 0;
+            z-index: 20;
+            background: #020617;
             border-right: 1px solid rgba(255,255,255,0.05);
         }
 
@@ -46,6 +56,7 @@
             height: 100%;
             background: rgba(255,255,255,0.01);
             border-radius: 8px;
+            min-width: 0; /* Évite l'éclatement du flex */
         }
 
         .grid-line {
@@ -59,15 +70,18 @@
             position: absolute;
             left: 4px; right: 4px;
             border-radius: 10px;
-            padding: 8px;
-            font-size: 0.72rem;
+            padding: 6px;
+            font-size: 0.7rem;
             border: 1px solid rgba(255,255,255,0.1);
             display: flex;
             flex-direction: column;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             z-index: 10;
             overflow: hidden;
+            transition: transform 0.2s;
         }
+        
+        .course-card:hover { transform: scale(1.02); z-index: 50; }
 
         .type-tp { background: linear-gradient(135deg, #065f46 0%, #059669 100%); border-left: 4px solid #34d399; }
         .type-td { background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); border-left: 4px solid #60a5fa; }
@@ -75,9 +89,12 @@
 
         .active-btn { background: #3b82f6 !important; color: white !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Style pour les jours en vue jour */
+        .day-pill { transition: all 0.2s; flex-shrink: 0; }
     </style>
 </head>
-<body class="p-4 md:p-6">
+<body class="p-2 md:p-6">
 
     <div class="max-w-[1400px] mx-auto">
         <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -88,13 +105,14 @@
                 <button onclick="setView('week')" id="btn-week" class="px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all active-btn">Semaine</button>
             </div>
 
-            <div id="day-nav" class="hidden flex gap-2 overflow-x-auto no-scrollbar py-2">
+            <div id="day-nav" class="hidden flex gap-2 overflow-x-auto no-scrollbar py-2 w-full md:w-auto justify-center">
                 <!-- Injecté par JS -->
             </div>
         </header>
 
-        <div class="glass rounded-[2rem] p-4 overflow-x-auto no-scrollbar shadow-2xl">
-            <div class="calendar-wrapper">
+        <!-- Container avec scroll horizontal sur mobile -->
+        <div id="calendar-overflow" class="glass rounded-[2rem] p-2 md:p-4 overflow-x-auto no-scrollbar shadow-2xl">
+            <div class="calendar-wrapper" id="wrapper-element">
                 <div class="time-gutter" id="time-gutter"></div>
                 <div class="days-container" id="days-container"></div>
             </div>
@@ -104,11 +122,13 @@
     <script>
         const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
         const START_H = 8;
-        const END_H = 18; // Arrêt à 18h
+        const END_H = 18;
         const PIXELS_PER_HOUR = 80;
         
         let currentView = 'week';
-        let currentDay = jours[new Date().getDay() - 1] || "Lundi";
+        // Détermine le jour actuel, sinon Lundi par défaut
+        const todayIdx = new Date().getDay() - 1;
+        let currentDay = (todayIdx >= 0 && todayIdx <= 4) ? jours[todayIdx] : "Lundi";
         let planningData = [];
 
         async function init() {
@@ -124,6 +144,10 @@
             document.getElementById('btn-day').classList.toggle('active-btn', v === 'day');
             document.getElementById('btn-week').classList.toggle('active-btn', v === 'week');
             document.getElementById('day-nav').style.display = v === 'day' ? 'flex' : 'none';
+            
+            // Ajoute une classe au body pour le CSS spécifique
+            document.body.className = v === 'day' ? 'p-2 md:p-6 view-day' : 'p-2 md:p-6 view-week';
+            
             render();
         }
 
@@ -138,25 +162,30 @@
             const container = document.getElementById('days-container');
             const dayNav = document.getElementById('day-nav');
 
-            // 1. Gutter des heures (8h -> 18h)
+            // 1. Gutter
             let gutterHtml = '';
             for (let h = START_H; h <= END_H; h++) {
                 gutterHtml += `<div class="hour-mark" style="top: ${(h - START_H) * PIXELS_PER_HOUR}px">${h}h00</div>`;
             }
             gutter.innerHTML = gutterHtml;
 
-            // 2. Nav Jour
+            // 2. Nav Jour (Améliorée)
             dayNav.innerHTML = jours.map(j => `
-                <button onclick="currentDay='${j}'; render();" class="px-4 py-1 rounded-full border border-white/10 text-[10px] font-bold ${currentDay === j ? 'bg-white text-black' : 'text-white/40'}">${j}</button>
+                <button onclick="currentDay='${j}'; render();" 
+                    class="day-pill px-4 py-2 rounded-full border border-white/10 text-[10px] font-bold uppercase ${currentDay === j ? 'bg-blue-500 text-white border-blue-400' : 'text-white/40'}">
+                    ${j}
+                </button>
             `).join('');
 
             // 3. Colonnes
             const displayJours = currentView === 'week' ? jours : [currentDay];
             container.innerHTML = displayJours.map(j => `
                 <div class="day-column">
-                    <div class="text-center text-[10px] font-black text-slate-500 uppercase mb-2 sticky top-0">${j}</div>
-                    ${Array.from({length: END_H - START_H + 1}).map((_, i) => `<div class="grid-line" style="top: ${i * PIXELS_PER_HOUR}px"></div>`).join('')}
-                    ${renderCoursesForDay(j)}
+                    <div class="text-center text-[11px] font-black text-slate-400 uppercase py-2 sticky top-0 bg-slate-900/80 backdrop-blur-md rounded-t-lg mb-1 z-10">${j}</div>
+                    ${Array.from({length: END_H - START_H + 1}).map((_, i) => `<div class="grid-line" style="top: ${i * PIXELS_PER_HOUR + 34}px"></div>`).join('')}
+                    <div class="relative" style="height: 100%; margin-top: 34px;">
+                        ${renderCoursesForDay(j)}
+                    </div>
                 </div>
             `).join('');
         }
@@ -173,12 +202,14 @@
 
                     return `
                         <div class="course-card ${typeClass}" style="top: ${top}px; height: ${height}px;">
-                            <div class="flex justify-between font-black text-[0.65rem] leading-none mb-1">
-                                <span>${c.matiere}</span>
-                                <span class="opacity-70">${c.horaire}</span>
+                            <div class="flex flex-col h-full">
+                                <div class="flex justify-between items-start gap-1">
+                                    <span class="font-black text-[0.7rem] leading-tight">${c.matiere}</span>
+                                    <span class="text-[0.55rem] font-bold whitespace-nowrap bg-black/20 px-1 rounded">${start}</span>
+                                </div>
+                                <div class="text-[0.6rem] font-semibold truncate mt-1 opacity-90">${c.prof}</div>
+                                <div class="mt-auto text-[0.6rem] font-black opacity-50 uppercase tracking-wider">${c.salle}</div>
                             </div>
-                            <div class="text-[0.6rem] font-medium truncate">${c.prof}</div>
-                            <div class="mt-auto text-[0.6rem] font-bold opacity-60 uppercase">${c.salle}</div>
                         </div>
                     `;
                 } catch(e) { return ''; }
