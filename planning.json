@@ -1,90 +1,146 @@
 [
   {
     "jour": "Lundi",
-    "matiere": "SAE2.02",
-    "horaire": "13h30 - 15h00",
-    "type": "TP",
-    "salle": "MAMBO-MMI",
-    "prof": "LOISEAU ROMAIN"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "SAE2.03",
-    "horaire": "15h00 - 16h30",
-    "type": "TD",
-    "salle": "JAVA-MMI",
-    "prof": "PUIZILLOUT ANNE-MARIE"
+    "matiere": "R2.03",
+    "horaire": "08h15 - 09h15",
+    "type": "PROMO",
+    "salle": "Amphi 2",
+    "prof": "MARNE BERTRAND"
   },
   {
     "jour": "Lundi",
     "matiere": "R2.16",
-    "horaire": "16h30 - 18h00",
+    "horaire": "09h30 - 11h00",
+    "type": "TD",
+    "salle": "TANGO-MMI",
+    "prof": "LOISEAU ROMAIN"
+  },
+  {
+    "jour": "Lundi",
+    "matiere": "R2.01",
+    "horaire": "11h00 - 12h30",
     "type": "TP",
-    "salle": "MAMBO-MMI",
+    "salle": "SALSA-MMI",
+    "prof": "CROZET HÉLÈNE"
+  },
+  {
+    "jour": "Lundi",
+    "matiere": "SAE2.03",
+    "horaire": "13h30 - 15h00",
+    "type": "TP",
+    "salle": "HIP HOP-MMI",
+    "prof": "PUIZILLOUT ANNE-MARIE"
+  },
+  {
+    "jour": "Lundi",
+    "matiere": "SAE2.02",
+    "horaire": "15h00 - 16h30",
+    "type": "TD",
+    "salle": "ROCK-MMI",
+    "prof": "COLET MAXENCE"
+  },
+  {
+    "jour": "Lundi",
+    "matiere": "SAE2.03",
+    "horaire": "16h30 - 18h00",
+    "type": "TD",
+    "salle": "ROCK-MMI",
+    "prof": "AUTONOMIE"
+  },
+  {
+    "jour": "Mardi",
+    "matiere": "SAE2.02",
+    "horaire": "09h30 - 11h00",
+    "type": "TP",
+    "salle": "SALSA-MMI",
     "prof": "LOISEAU ROMAIN"
   },
   {
     "jour": "Mardi",
+    "matiere": "SAE2.02",
+    "horaire": "11h00 - 12h30",
+    "type": "TD",
+    "salle": "TANGO-MMI",
+    "prof": "COLET MAXENCE"
+  },
+  {
+    "jour": "Mardi",
     "matiere": "SAE2.03",
-    "horaire": "08h00 - 09h30",
+    "horaire": "13h30 - 15h00",
     "type": "TP",
-    "salle": "N'ROLL-MMI",
+    "salle": "HIP HOP-MMI",
     "prof": "CORBIERE ALAIN"
   },
   {
     "jour": "Mardi",
-    "matiere": "R2.01",
-    "horaire": "09h30 - 11h00",
+    "matiere": "R2.20",
+    "horaire": "15h00 - 18h00",
     "type": "TP",
-    "salle": "HIP HOP-MMI",
-    "prof": "CROZET HÉLÈNE"
+    "salle": "FOX-MMI",
+    "prof": "HOULIERE ERIC"
   },
   {
-    "jour": "Mardi",
+    "jour": "Mercredi",
+    "matiere": "R2.18",
+    "horaire": "08h30 - 10h30",
+    "type": "TD",
+    "salle": "TD2-MMI",
+    "prof": "LEMONNIER MARIE"
+  },
+  {
+    "jour": "Mercredi",
     "matiere": "SAE2.03",
     "horaire": "11h00 - 12h30",
     "type": "TD",
-    "salle": "JAVA-MMI",
-    "prof": "PUIZILLOUT ANNE-MARIE"
+    "salle": "TD4-MMI",
+    "prof": "AUTONOMIE"
   },
   {
-    "jour": "Mardi",
-    "matiere": "R2.08",
-    "horaire": "13h30 - 15h00",
+    "jour": "Mercredi",
+    "matiere": "SAE2.02",
+    "horaire": "13h30 - 16h30",
     "type": "TD",
     "salle": "TANGO-MMI",
+    "prof": "AUTONOMIE"
+  },
+  {
+    "jour": "Jeudi",
+    "matiere": "SAE2.02",
+    "horaire": "09h30 - 12h30",
+    "type": "TD",
+    "salle": "TANGO-MMI",
+    "prof": "AUTONOMIE"
+  },
+  {
+    "jour": "Jeudi",
+    "matiere": "R2.08",
+    "horaire": "13h30 - 15h00",
+    "type": "TP",
+    "salle": "SAMBA-MMI",
     "prof": "HERVAGAULT REGIS"
   },
   {
-    "jour": "Mardi",
+    "jour": "Jeudi",
     "matiere": "SAE2.02",
     "horaire": "15h00 - 16h30",
     "type": "TP",
-    "salle": "HIP HOP-MMI",
+    "salle": "SAMBA-MMI",
     "prof": "HERVAGAULT REGIS"
   },
   {
-    "jour": "Mercredi",
+    "jour": "Jeudi",
     "matiere": "SAE2.02",
-    "horaire": "08h00 - 12h30",
-    "type": "TD",
-    "salle": "TD4-MMI",
-    "prof": "AUTONOMIE"
+    "horaire": "16h30 - 18h00",
+    "type": "TP",
+    "salle": "SAMBA-MMI",
+    "prof": "HERVAGAULT REGIS"
   },
   {
-    "jour": "Mercredi",
+    "jour": "Vendredi",
     "matiere": "SAE2.03",
-    "horaire": "13h30 - 16h30",
+    "horaire": "09h30 - 12h30",
     "type": "TD",
     "salle": "TD4-MMI",
-    "prof": "AUTONOMIE"
-  },
-  {
-    "jour": "Mercredi",
-    "matiere": "Présentation - sensibilisation avec la COPS 53",
-    "horaire": "16h45 - 17h30",
-    "type": "PROMO",
-    "salle": "Amphi 1",
     "prof": "AUTONOMIE"
   }
 ]
