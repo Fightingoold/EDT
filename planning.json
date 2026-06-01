@@ -1,11 +1,35 @@
 [
   {
+    "jour": "Lundi",
+    "matiere": "R2.13",
+    "horaire": "10h30 - 12h30",
+    "type": "TD",
+    "salle": "JAVA-MMI",
+    "prof": "IKSAL SEBASTIEN"
+  },
+  {
+    "jour": "Lundi",
+    "matiere": "SAE2.02",
+    "horaire": "13h30 - 15h00",
+    "type": "TP",
+    "salle": "HIP HOP-MMI",
+    "prof": "COLET MAXENCE"
+  },
+  {
+    "jour": "Lundi",
+    "matiere": "R2.02",
+    "horaire": "15h00 - 16h30",
+    "type": "TD",
+    "salle": "TD4-MMI",
+    "prof": "CIVET EMMA"
+  },
+  {
     "jour": "Mardi",
-    "matiere": "R2.03",
-    "horaire": "08h15 - 09h15",
-    "type": "PROMO",
-    "salle": "Amphi 1",
-    "prof": "MARNE BERTRAND"
+    "matiere": "SAE2.02",
+    "horaire": "09h30 - 12h30",
+    "type": "TD",
+    "salle": "JAVA-MMI",
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mardi",
@@ -13,62 +37,86 @@
     "horaire": "13h30 - 15h00",
     "type": "TD",
     "salle": "TANGO-MMI",
-    "prof": "LOISEAU ROMAIN"
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mardi",
-    "matiere": "R2.14",
+    "matiere": "R2.02",
     "horaire": "15h00 - 16h30",
-    "type": "TD",
-    "salle": "ROCK-MMI",
-    "prof": "COLET MAXENCE"
+    "type": "TP",
+    "salle": "HIP HOP-MMI",
+    "prof": "CIVET EMMA"
+  },
+  {
+    "jour": "Mardi",
+    "matiere": "SAE2.03",
+    "horaire": "16h30 - 18h00",
+    "type": "TP",
+    "salle": "MAMBO-MMI",
+    "prof": "PUIZILLOUT ANNE-MARIE"
   },
   {
     "jour": "Mercredi",
     "matiere": "SAE2.02",
-    "horaire": "08h00 - 11h00",
+    "horaire": "09h30 - 12h30",
+    "type": "TP",
+    "salle": "SAMBA-MMI",
+    "prof": "LOISEAU ROMAIN"
+  },
+  {
+    "jour": "Mercredi",
+    "matiere": "R2.03",
+    "horaire": "13h30 - 15h00",
     "type": "TD",
-    "salle": "ROCK-MMI",
-    "prof": "AUTONOMIE"
+    "salle": "TD4-MMI",
+    "prof": "MARNE BERTRAND"
   },
   {
     "jour": "Mercredi",
     "matiere": "SAE2.03",
-    "horaire": "11h00 - 12h30",
+    "horaire": "15h00 - 17h00",
     "type": "TD",
-    "salle": "ROCK-MMI",
+    "salle": "TD4-MMI",
     "prof": "AUTONOMIE"
   },
   {
     "jour": "Jeudi",
     "matiere": "SAE2.03",
-    "horaire": "09h30 - 12h30",
+    "horaire": "11h00 - 12h30",
     "type": "TD",
-    "salle": "ROCK-MMI",
+    "salle": "TD4-MMI",
+    "prof": "AUTONOMIE"
+  },
+  {
+    "jour": "Jeudi",
+    "matiere": "R2.19",
+    "horaire": "13h30 - 15h30",
+    "type": "TD",
+    "salle": "TD1-MMI",
+    "prof": "HERVAGAULT REGIS"
+  },
+  {
+    "jour": "Jeudi",
+    "matiere": "SAE2.03",
+    "horaire": "15h30 - 18h00",
+    "type": "TD",
+    "salle": "TANGO-MMI",
     "prof": "AUTONOMIE"
   },
   {
     "jour": "Vendredi",
-    "matiere": "R2.20",
+    "matiere": "R2.16",
     "horaire": "09h30 - 11h00",
+    "type": "TD",
+    "salle": "ROCK-MMI",
+    "prof": "LOISEAU ROMAIN"
+  },
+  {
+    "jour": "Vendredi",
+    "matiere": "R2.20",
+    "horaire": "11h00 - 12h30",
     "type": "TP",
     "salle": "SAMBA-MMI",
     "prof": "HOULIERE ERIC"
-  },
-  {
-    "jour": "Vendredi",
-    "matiere": "R2.13",
-    "horaire": "11h00 - 12h30",
-    "type": "TP",
-    "salle": "N'ROLL-MMI",
-    "prof": "IKSAL SEBASTIEN"
-  },
-  {
-    "jour": "Vendredi",
-    "matiere": "SAE2.02",
-    "horaire": "13h30 - 15h00",
-    "type": "TD",
-    "salle": "ROCK-MMI",
-    "prof": "COLET MAXENCE"
   }
 ]
