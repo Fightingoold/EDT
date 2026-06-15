@@ -1,90 +1,90 @@
 [
   {
     "jour": "Lundi",
-    "matiere": "R2.12",
-    "horaire": "08h30 - 10h30",
+    "matiere": "SAE2.03",
+    "horaire": "09h30 - 12h30",
     "type": "TD",
-    "salle": "JAVA-MMI",
-    "prof": "PUIZILLOUT ANNE-MARIE"
+    "salle": "ROCK-MMI",
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Lundi",
-    "matiere": "R2.08",
-    "horaire": "11h00 - 12h30",
-    "type": "TP",
-    "salle": "N'ROLL-MMI",
-    "prof": "HERVAGAULT REGIS"
-  },
-  {
-    "jour": "Mardi",
-    "matiere": "SAE2.02",
-    "horaire": "08h00 - 09h30",
+    "matiere": "SAE2.03",
+    "horaire": "13h30 - 15h00",
     "type": "TD",
     "salle": "ROCK-MMI",
-    "prof": "HOULIERE ERIC"
-  },
-  {
-    "jour": "Mardi",
-    "matiere": "SAE2.02",
-    "horaire": "11h00 - 12h30",
-    "type": "TD",
-    "salle": "JAVA-MMI",
     "prof": "AUTONOMIE"
   },
   {
     "jour": "Mardi",
-    "matiere": "R2.01",
-    "horaire": "13h30 - 15h00",
-    "type": "TP",
-    "salle": "SALSA-MMI",
-    "prof": "CROZET HÉLÈNE"
+    "matiere": "SAE2.02",
+    "horaire": "09h30 - 12h30",
+    "type": "TD",
+    "salle": "ROCK-MMI",
+    "prof": "AUTONOMIE"
   },
   {
     "jour": "Mardi",
     "matiere": "SAE2.02",
-    "horaire": "15h00 - 16h30",
+    "horaire": "13h30 - 15h00",
+    "type": "TP",
+    "salle": "SALSA-MMI",
+    "prof": "COLET MAXENCE"
+  },
+  {
+    "jour": "Mardi",
+    "matiere": "SAE2.02",
+    "horaire": "15h00 - 18h00",
     "type": "TD",
-    "salle": "ROCK-MMI",
+    "salle": "TANGO-MMI",
+    "prof": "AUTONOMIE"
+  },
+  {
+    "jour": "Mercredi",
+    "matiere": "R2.16",
+    "horaire": "11h00 - 12h30",
+    "type": "TP",
+    "salle": "MAMBO-MMI",
     "prof": "LOISEAU ROMAIN"
   },
   {
     "jour": "Mercredi",
-    "matiere": "Présentation des parcours",
-    "horaire": "08h30 - 09h30",
-    "type": "PROMO",
-    "salle": "Amphi 3",
-    "prof": "CORBIERE ALAIN"
+    "matiere": "R2.08",
+    "horaire": "13h30 - 15h00",
+    "type": "TP",
+    "salle": "HIP HOP-MMI",
+    "prof": "HERVAGAULT REGIS"
   },
   {
     "jour": "Mercredi",
     "matiere": "R2.14",
-    "horaire": "11h00 - 12h30",
+    "horaire": "15h00 - 16h30",
     "type": "TD",
     "salle": "ROCK-MMI",
     "prof": "COLET MAXENCE"
   },
   {
-    "jour": "Mercredi",
-    "matiere": "SAE2.02",
-    "horaire": "13h30 - 16h30",
-    "type": "TD",
-    "salle": "ROCK-MMI",
-    "prof": "AUTONOMIE"
+    "jour": "Jeudi",
+    "matiere": "R2.13",
+    "horaire": "08h00 - 09h30",
+    "type": "TP",
+    "salle": "MAMBO-MMI",
+    "prof": "IKSAL SEBASTIEN"
   },
   {
     "jour": "Jeudi",
-    "matiere": "SAE2.03",
-    "horaire": "09h30 - 12h30",
-    "type": "TD",
-    "salle": "JAVA-MMI",
-    "prof": "AUTONOMIE"
+    "matiere": "R2.03",
+    "horaire": "09h30 - 11h00",
+    "type": "TP",
+    "salle": "HIP HOP-MMI",
+    "prof": "MARNE BERTRAND"
   },
   {
     "jour": "Jeudi",
-    "matiere": "SAE2.03",
-    "horaire": "13h30 - 16h30",
-    "type": "TD",
-    "salle": "JAVA-MMI",
-    "prof": "AUTONOMIE"
+    "matiere": "Expo Photo",
+    "horaire": "13h15 - 15h30",
+    "type": "PROMO",
+    "salle": "N/C",
+    "prof": "CROZET HÉLÈNE"
   }
 ]
