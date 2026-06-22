@@ -1,90 +1,50 @@
 [
   {
     "jour": "Lundi",
-    "matiere": "SAE2.03",
-    "horaire": "09h30 - 12h30",
-    "type": "TD",
-    "salle": "ROCK-MMI",
-    "prof": "AUTONOMIE"
-  },
-  {
-    "jour": "Lundi",
-    "matiere": "SAE2.03",
-    "horaire": "13h30 - 15h00",
-    "type": "TD",
-    "salle": "ROCK-MMI",
-    "prof": "AUTONOMIE"
-  },
-  {
-    "jour": "Mardi",
-    "matiere": "SAE2.02",
-    "horaire": "09h30 - 12h30",
-    "type": "TD",
-    "salle": "ROCK-MMI",
-    "prof": "AUTONOMIE"
-  },
-  {
-    "jour": "Mardi",
-    "matiere": "SAE2.02",
-    "horaire": "13h30 - 15h00",
+    "matiere": "R2.08",
+    "horaire": "09h30 - 11h00",
     "type": "TP",
     "salle": "SALSA-MMI",
-    "prof": "COLET MAXENCE"
-  },
-  {
-    "jour": "Mardi",
-    "matiere": "SAE2.02",
-    "horaire": "15h00 - 18h00",
-    "type": "TD",
-    "salle": "TANGO-MMI",
-    "prof": "AUTONOMIE"
-  },
-  {
-    "jour": "Mercredi",
-    "matiere": "R2.16",
-    "horaire": "11h00 - 12h30",
-    "type": "TP",
-    "salle": "MAMBO-MMI",
-    "prof": "LOISEAU ROMAIN"
-  },
-  {
-    "jour": "Mercredi",
-    "matiere": "R2.08",
-    "horaire": "13h30 - 15h00",
-    "type": "TP",
-    "salle": "HIP HOP-MMI",
     "prof": "HERVAGAULT REGIS"
   },
   {
-    "jour": "Mercredi",
+    "jour": "Lundi",
     "matiere": "R2.14",
-    "horaire": "15h00 - 16h30",
+    "horaire": "11h00 - 12h30",
     "type": "TD",
     "salle": "ROCK-MMI",
     "prof": "COLET MAXENCE"
   },
   {
-    "jour": "Jeudi",
-    "matiere": "R2.13",
+    "jour": "Mardi",
+    "matiere": "R2.16",
     "horaire": "08h00 - 09h30",
-    "type": "TP",
-    "salle": "MAMBO-MMI",
-    "prof": "IKSAL SEBASTIEN"
+    "type": "TD",
+    "salle": "TANGO-MMI",
+    "prof": "LOISEAU ROMAIN"
   },
   {
-    "jour": "Jeudi",
+    "jour": "Mardi",
     "matiere": "R2.03",
     "horaire": "09h30 - 11h00",
     "type": "TP",
-    "salle": "HIP HOP-MMI",
+    "salle": "SAMBA-MMI",
     "prof": "MARNE BERTRAND"
   },
   {
-    "jour": "Jeudi",
-    "matiere": "Expo Photo",
-    "horaire": "13h15 - 15h30",
-    "type": "PROMO",
-    "salle": "N/C",
-    "prof": "CROZET HÉLÈNE"
+    "jour": "Mardi",
+    "matiere": "SAE2.03",
+    "horaire": "11h00 - 12h30",
+    "type": "TD",
+    "salle": "SAMBA-MMI",
+    "prof": "COLET MAXENCE"
+  },
+  {
+    "jour": "Mardi",
+    "matiere": "SAE2.03",
+    "horaire": "13h30 - 15h00",
+    "type": "TD",
+    "salle": "SAMBA-MMI",
+    "prof": "COLET MAXENCE"
   }
 ]
